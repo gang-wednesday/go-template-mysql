@@ -6,9 +6,11 @@ package models
 import "testing"
 
 func TestUpsert(t *testing.T) {
+	t.Run("Authors", testAuthorsUpsert)
+
 	t.Run("GorpMigrations", testGorpMigrationsUpsert)
 
-	t.Run("Roles", testRolesUpsert)
+	t.Run("Posts", testPostsUpsert)
 
-	t.Run("Users", testUsersUpsert)
+	t.Run("Roles", testRolesUpsert)
 }

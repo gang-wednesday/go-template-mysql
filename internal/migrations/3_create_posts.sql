@@ -1,14 +1,14 @@
 -- +migrate Up
 -- SQL in section 'Up' is executed when this migration is applied
 CREATE TABLE posts (
-			id varchar(50) PRIMARY KEY,
+			id INT AUTO_INCREMENT PRIMARY KEY,
 			title text NOT NULL,
 			content text  NOT NULL,
-            author_id varchar(50) NOT NULL,
+            author_id int NOT NULL,
 			created_at TIMESTAMP DEFAULT NOW(),
 			updated_at TIMESTAMP,
-			deleted_at TIMESTAMP
-			CONSTRAINT fk__authors_postss FOREIGN KEY (author_id) REFERENCES authors(id)
+			deleted_at TIMESTAMP,
+			CONSTRAINT fk__authors_posts FOREIGN KEY (author_id) REFERENCES authors(id)
 );
 
 -- +migrate Down

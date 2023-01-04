@@ -16,20 +16,20 @@ import (
 
 // Service ...
 type Service interface {
-	GetUser(id int, ctx context.Context) (models.User, error)
+	GetAuthor(id int, ctx context.Context) (models.Author, error)
 	GetRole(id int, ctx context.Context) (models.Role, error)
 	IncVisits(path string) (int, error)
 	StartVisits(path string, exp time.Duration) error
 }
 
 // GetUser gets user from redis, if present, else from the database
-func GetUser(userID int, ctx context.Context) (*models.User, error) {
+func GetUser(userID int, ctx context.Context) (*models.Author, error) {
 	// get user cache key
 	cachedUserValue, err := GetKeyValue(fmt.Sprintf("user%d", userID))
 	if err != nil {
 		return nil, err
 	}
-	var user *models.User
+	var user *models.Author
 	if cachedUserValue != nil {
 		b := cachedUserValue.([]byte)
 		err = json.Unmarshal(b, &user)
@@ -38,7 +38,7 @@ func GetUser(userID int, ctx context.Context) (*models.User, error) {
 		}
 		return user, err
 	}
-	user, err = daos.FindUserByID(userID, ctx)
+	user, err = daos.FindAuthorById(userID, ctx)
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "data")
 	}

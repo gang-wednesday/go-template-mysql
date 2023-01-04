@@ -92,9 +92,8 @@ func TestStart(t *testing.T) {
 		return e
 	})
 
-	observers := map[string]chan *graphql.User{}
 	graphqlHandler := handler.New(graphql.NewExecutableSchema(graphql.Config{
-		Resolvers: &resolver.Resolver{Observers: observers},
+		Resolvers: &resolver.Resolver{},
 	}))
 
 	for _, tt := range tests {

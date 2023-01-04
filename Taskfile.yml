@@ -7,6 +7,9 @@ tasks:
   db-migrate:
     cmds:
       - go run ./cmd/migrations/main.go
+  dbstruct-gen:
+    cmds:
+      -  go run ./cmd/gendbmdls/main.go
   # test:
   #   cmds:
   #     - echo " *** Running Coverage Tests ***"

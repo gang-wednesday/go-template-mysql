@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-template/internal/config"
+	"log"
 	"os"
 	"strings"
 
@@ -58,6 +59,7 @@ func main() {
 		}
 	}
 	if err != nil {
+		log.Println(err)
 		return
 	}
 

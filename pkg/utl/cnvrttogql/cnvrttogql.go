@@ -11,17 +11,17 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// UsersToGraphQlUsers converts array of type models.User into array of pointer type graphql.User
-func UsersToGraphQlUsers(u models.UserSlice, count int) []*graphql.User {
-	var r []*graphql.User
+// UsersToGraphQlUsers converts array of type models.Author into array of pointer type graphql.Author
+func UsersToGraphQlUsers(u models.AuthorSlice, count int) []*graphql.Author {
+	var r []*graphql.Author
 	for _, e := range u {
 		r = append(r, UserToGraphQlUser(e, count))
 	}
 	return r
 }
 
-// UserToGraphQlUser converts type models.User into pointer type graphql.User
-func UserToGraphQlUser(u *models.User, count int) *graphql.User {
+// UserToGraphQlUser converts type models.Author into pointer type graphql.Author
+func UserToGraphQlUser(u *models.Author, count int) *graphql.Author {
 	count++
 	if u == nil {
 		return nil
@@ -34,16 +34,15 @@ func UserToGraphQlUser(u *models.User, count int) *graphql.User {
 		}
 	}
 
-	return &graphql.User{
-		ID:        strconv.Itoa(u.ID),
-		FirstName: convert.NullDotStringToPointerString(u.FirstName),
-		LastName:  convert.NullDotStringToPointerString(u.LastName),
-		Username:  convert.NullDotStringToPointerString(u.Username),
-		Email:     convert.NullDotStringToPointerString(u.Email),
-		Mobile:    convert.NullDotStringToPointerString(u.Mobile),
-		Address:   convert.NullDotStringToPointerString(u.Address),
-		Active:    convert.NullDotBoolToPointerBool(u.Active),
-		Role:      RoleToGraphqlRole(role, count),
+	return &graphql.Author{
+		ID:       strconv.Itoa(u.ID),
+		UserName: convert.NullDotStringToPointerString(u.Username),
+
+		Email: convert.NullDotStringToPointerString(u.Email),
+
+		Address: convert.NullDotStringToPointerString(u.AuthorAddress),
+		Active:  convert.NullDotBoolToPointerBool(u.Active),
+		Role:    RoleToGraphqlRole(role, count),
 	}
 }
 
@@ -52,11 +51,11 @@ func RoleToGraphqlRole(r *models.Role, count int) *graphql.Role {
 	if r == nil {
 		return nil
 	}
-	var users models.UserSlice
+	var users models.AuthorSlice
 	if count <= constants.MaxDepth {
-		r.L.LoadUsers(context.Background(), boil.GetContextDB(), true, r, nil) //nolint:errcheck
+		r.L.LoadAuthors(context.Background(), boil.GetContextDB(), true, r, nil) //nolint:errcheck
 		if r.R != nil {
-			users = r.R.Users
+			users = r.R.Authors
 		}
 	}
 
@@ -67,6 +66,6 @@ func RoleToGraphqlRole(r *models.Role, count int) *graphql.Role {
 		UpdatedAt:   convert.NullDotTimeToPointerInt(r.UpdatedAt),
 		CreatedAt:   convert.NullDotTimeToPointerInt(r.CreatedAt),
 		DeletedAt:   convert.NullDotTimeToPointerInt(r.DeletedAt),
-		Users:       UsersToGraphQlUsers(users, count),
+		Authors:     UsersToGraphQlUsers(users, count),
 	}
 }

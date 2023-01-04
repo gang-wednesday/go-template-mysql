@@ -38,8 +38,8 @@ type ContextKey struct {
 }
 
 // FromContext finds the user from the context. REQUIRES Middleware to have run.
-func FromContext(ctx context.Context) *models.User {
-	user, _ := ctx.Value(UserCtxKey).(*models.User)
+func FromContext(ctx context.Context) *models.Author {
+	user, _ := ctx.Value(UserCtxKey).(*models.Author)
 	return user
 }
 
@@ -136,7 +136,7 @@ func GraphQLMiddleware(
 	}
 
 	email := claims["e"].(string)
-	user, err := daos.FindUserByEmail(email, ctx)
+	user, err := daos.FindAuthorByEmail(email, ctx)
 
 	if err != nil {
 		return resultwrapper.HandleGraphQLError("No user found for this email address")

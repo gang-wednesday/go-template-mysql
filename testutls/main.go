@@ -34,34 +34,15 @@ var MockJWTSecret = "12345678901234567890123456789012345678901234567890123456789
 var MockQuery = `{"query":"query users { users { users { id } } }","variables":{}}"`
 var MockWhitelistedQuery = `{"query":"query Schema {  __schema { queryType { kind } } }","variables":{}}"`
 
-func MockUser() *models.User {
-	return &models.User{
-		ID:                 MockID,
-		FirstName:          null.StringFrom("First"),
-		LastName:           null.StringFrom("Last"),
-		Username:           null.StringFrom("username"),
-		Email:              null.StringFrom(MockEmail),
-		Mobile:             null.StringFrom("+911234567890"),
-		Address:            null.StringFrom("22 Jump Street"),
-		Password:           null.StringFrom(`!@#!@12ASa3123`),
-		Active:             null.BoolFrom(false),
-		LastLogin:          null.NewTime(time.Time{}, false),
-		LastPasswordChange: null.NewTime(time.Time{}, false),
-		Token:              null.StringFrom("asd"),
-		DeletedAt:          null.NewTime(time.Time{}, false),
-		UpdatedAt:          null.NewTime(time.Time{}, false),
-		RoleID:             null.IntFrom(1),
-	}
+func MockUser() *models.Author {
+	return &models.Author{}
 }
-func MockUsers() []*models.User {
-	return []*models.User{
+func MockUsers() []*models.Author {
+	return []*models.Author{
 		{
-			FirstName: null.StringFrom("First"),
-			LastName:  null.StringFrom("Last"),
-			Username:  null.StringFrom("username"),
-			Email:     null.StringFrom(MockEmail),
-			Mobile:    null.StringFrom("+911234567890"),
-			Address:   null.StringFrom("22 Jump Street"),
+
+			Username: null.StringFrom("username"),
+			Email:    null.StringFrom(MockEmail),
 		},
 	}
 

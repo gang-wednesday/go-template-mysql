@@ -44,16 +44,23 @@ func FindPosts(queryMods []qm.QueryMod, ctx context.Context) (models.PostSlice, 
 	return posts, count, err
 }
 
-func CreatePost(post models.Post, ctx context.Context, tx *sql.Tx) (models.Post, error) {
+func CreatePostTx(post models.Post, ctx context.Context, tx *sql.Tx) (models.Post, error) {
 	contextExecutor := getContextExecutor(tx)
 	err := post.Insert(ctx, contextExecutor, boil.Infer())
 	return post, err
 }
+func CreatePost(post models.Post, ctx context.Context) (models.Post, error) {
+	return CreatePostTx(post, ctx, nil)
+}
 
-func Updatepost(post models.Post, ctx context.Context, tx *sql.Tx) (models.Post, error) {
+func UpdatepostTx(post models.Post, ctx context.Context, tx *sql.Tx) (models.Post, error) {
 	contextExecutor := getContextExecutor(tx)
 	_, err := post.Update(ctx, contextExecutor, boil.Infer())
 	return post, err
+}
+
+func Updatepost(post models.Post, ctx context.Context) (models.Post, error) {
+	return UpdatepostTx(post, ctx, nil)
 }
 
 func DeletePost(post models.Post, ctx context.Context) (int64, error) {

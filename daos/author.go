@@ -36,11 +36,19 @@ func CreateAuthorTx(author models.Author, ctx context.Context, tx *sql.Tx) (*mod
 	return &author, err
 }
 
+func CreateAuthor(author models.Author, ctx context.Context) (*models.Author, error) {
+	return CreateAuthorTx(author, ctx, nil)
+}
+
 func UpdateAuthorTx(author models.Author, ctx context.Context, tx *sql.Tx) (models.Author, error) {
 	contextExecutor := getContextExecutor(tx)
 	_, err := author.Update(ctx, contextExecutor, boil.Infer())
 
 	return author, err
+}
+
+func UpdateAuthor(author models.Author, ctx context.Context) (models.Author, error) {
+	return UpdateAuthorTx(author, ctx, nil)
 }
 
 func DeleteAuthor(author models.Author, ctx context.Context) (int64, error) {

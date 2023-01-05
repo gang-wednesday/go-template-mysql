@@ -7,29 +7,90 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/config"
+	"go-template/internal/middleware/auth"
+	"go-template/internal/service"
+	"go-template/models"
+	"go-template/pkg/utl/cnvrttogql"
+	"strconv"
+
+	"github.com/volatiletech/null/v8"
 )
 
 // CreateAuthor is the resolver for the createAuthor field.
 func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.AuthorCreateInput) (*gqlmodels.Author, error) {
 
-	// active := null.NewBool(false, false)
-	// if input.Active != nil {
-	// 	active = null.BoolFrom(*input.Active)
-	// }
-	// roleId, _ := strconv.Atoi(input.RoleID)
-	// author := models.Author{
-	// 	Username: null.StringFrom(*input.UserName),
-	// }
-	panic("")
+	active := null.NewBool(false, false)
+	if input.Active != nil {
+		active = null.BoolFrom(*input.Active)
+	}
+	roleId, _ := strconv.Atoi(input.RoleID)
+	author := models.Author{
+		Username: null.StringFrom(*input.UserName),
+		Email:    null.StringFrom(*input.Email),
+
+		RoleID: null.IntFrom(roleId),
+		Active: active,
+	}
+	cfg, err := config.Load()
+	if err != nil {
+		return nil, fmt.Errorf("error in loading config ")
+	}
+	// creating new secure service
+	sec := service.Secure(cfg)
+	author.Password = null.StringFrom(sec.Hash(author.Password.String))
+
+	_, err = daos.CreateAuthor(author, ctx)
+	if err != nil {
+		return nil, err
+	}
+	graphAuthor := cnvrttogql.AuthorToGraphQlAuthor(&author, 1)
+	return graphAuthor, nil
+
 }
 
 // UpdateAuthor is the resolver for the updateAuthor field.
 func (r *mutationResolver) UpdateAuthor(ctx context.Context, input *gqlmodels.AuthorUpdateInput) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: UpdateAuthor - updateAuthor"))
+	authorID := auth.AuthorIDFromContext(ctx)
+	author, err := daos.FindAuthorById(authorID, ctx)
+	var u models.Author
+	if author != nil {
+		u = *author
+	} else {
+		return nil, err
+	}
+	if input.UserName != nil {
+		u.Username = null.StringFromPtr(input.UserName)
+	}
+	if input.Email != nil {
+		u.Email = null.StringFromPtr(input.Email)
+	}
+	if input.Address != nil {
+		u.AuthorAddress = null.StringFromPtr(input.Address)
+	}
+
+	_, err = daos.UpdateAuthor(u, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	graphAuthor := cnvrttogql.AuthorToGraphQlAuthor(&u, 1)
+
+	return graphAuthor, nil
 }
 
 // DeleteAuthor is the resolver for the deleteAuthor field.
 func (r *mutationResolver) DeleteAuthor(ctx context.Context, input gqlmodels.AuthorDeleteInput) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteAuthor - deleteAuthor"))
+	authorID := auth.AuthorIDFromContext(ctx)
+	u, err := daos.FindAuthorById(authorID, ctx)
+	if err != nil {
+		return false, err
+	}
+	_, err = daos.DeleteAuthor(*u, ctx)
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }

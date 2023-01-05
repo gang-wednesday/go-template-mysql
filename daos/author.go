@@ -55,7 +55,9 @@ func FindAllAuthorWithCount(queryMods []qm.QueryMod, ctx context.Context) (model
 	if err != nil {
 		return models.AuthorSlice{}, 0, err
 	}
-	return authors, int64(len(authors)), nil
+	queryMods = append(queryMods, qm.Offset(0))
+	count, err := models.Authors(queryMods...).Count(ctx, contextExecutor)
+	return authors, count, err
 
 }
 

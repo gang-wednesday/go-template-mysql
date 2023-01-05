@@ -15,13 +15,33 @@ func FindPostbyId(id int, ctx context.Context) (*models.Post, error) {
 	return models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.ID), id)).One(ctx, contextExecutor)
 }
 
-func FindPostbyTitle(title string, ctx context.Context) (models.PostSlice, error) {
+func FindPostbyTitle(title string, ctx context.Context) (*models.Post, error) {
 	contextExecutor := getContextExecutor(nil)
-	return models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.Title), title)).All(ctx, contextExecutor)
+	return models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.Title), title)).One(ctx, contextExecutor)
 }
 
-func FindPostByAuthor(authorId int, ctx context.Context) (models.PostSlice, error) {
-	return models.PostSlice{}, nil
+func FindPostByAuthor(authorId int, ctx context.Context) (models.PostSlice, int64, error) {
+	contextExecutor := getContextExecutor(nil)
+	posts, err := models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.AuthorID), authorId)).All(ctx, contextExecutor)
+	if err != nil {
+		return models.PostSlice{}, 0, err
+	}
+
+	count, err := models.Authors(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.AuthorID), authorId)).Count(ctx, contextExecutor)
+
+	return posts, count, err
+}
+
+func FindPosts(queryMods []qm.QueryMod, ctx context.Context) (models.PostSlice, int64, error) {
+	contextExecutor := getContextExecutor(nil)
+	posts, err := models.Posts(queryMods...).All(ctx, contextExecutor)
+	if err != nil {
+		return models.PostSlice{}, 0, err
+	}
+
+	count, err := models.Authors(queryMods...).Count(ctx, contextExecutor)
+
+	return posts, count, err
 }
 
 func CreatePost(post models.Post, ctx context.Context, tx *sql.Tx) (models.Post, error) {

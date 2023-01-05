@@ -1,0 +1,39 @@
+type Post{
+    id: ID!
+    title: String
+    content: String
+	author: Author!		
+    createdAt: String
+    updatedAt: String
+    deletedAt: String
+}
+
+input PostUpdateInput{
+    id: ID!
+    title: String
+    content: String
+}
+input PostCreateInput{
+    title: String
+    content: String
+}
+input PostPagination{
+    limit: Int!
+    page: Int!
+}
+input PostDeleteInput {
+    id: ID!
+}
+
+input PostFilterByTitle {
+    title: String
+}
+
+type PostPayload{
+    post: Post
+}
+
+type PostsPayload{
+    posts: [Post]
+    total: Int
+}

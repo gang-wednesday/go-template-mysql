@@ -32,7 +32,7 @@ func TestGetUser(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *models.User
+		want    *models.Author
 		wantErr bool
 	}{
 		{
@@ -66,14 +66,12 @@ func TestGetUser(t *testing.T) {
 							"active",
 						}).AddRow(
 							testutls.MockUser().ID,
-							testutls.MockUser().FirstName,
-							testutls.MockUser().LastName,
+
 							testutls.MockUser().Username,
 							testutls.MockUser().Email,
-							testutls.MockUser().Mobile,
-							testutls.MockUser().Address,
+
 							testutls.MockUser().Token,
-							testutls.MockUser().Password,
+
 							testutls.MockUser().RoleID,
 							testutls.MockUser().Active,
 						),

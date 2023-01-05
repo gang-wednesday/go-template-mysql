@@ -60,7 +60,7 @@ func TestGraphQLMiddleware(t *testing.T) {
 				return testutls.MockJwt("SUPER_ADMIN"), nil
 			},
 			operationHandler: func(ctx context.Context) graphql2.ResponseHandler {
-				user := ctx.Value(auth.UserCtxKey).(*models.User)
+				user := ctx.Value(auth.UserCtxKey).(*models.Author)
 
 				// add your assertions here
 				assert.Equal(t, testutls.MockEmail, user.Email.String)
@@ -204,9 +204,9 @@ func makeRequest(t *testing.T, requestQuery string, tt struct {
 
 	tokenParser := tokenParserMock{}
 	client := &http.Client{}
-	observers := map[string]chan *graphql.User{}
+
 	graphqlHandler := handler.New(graphql.NewExecutableSchema(graphql.Config{
-		Resolvers: &resolver.Resolver{Observers: observers},
+		Resolvers: &resolver.Resolver{},
 	}))
 
 	graphqlHandler.
@@ -263,11 +263,11 @@ func makeRequest(t *testing.T, requestQuery string, tt struct {
 
 func TestUserIDFromContext(t *testing.T) {
 	cases := map[string]struct {
-		user   *models.User
+		user   *models.Author
 		userID int
 	}{
 		"Success": {
-			user:   &models.User{ID: testutls.MockID},
+			user:   &models.Author{ID: testutls.MockID},
 			userID: testutls.MockID,
 		},
 		"Failure": {
@@ -286,7 +286,7 @@ func TestUserIDFromContext(t *testing.T) {
 }
 
 func TestFromContext(t *testing.T) {
-	user := &models.User{ID: testutls.MockID}
+	user := &models.Author{ID: testutls.MockID}
 	u := auth.FromContext(context.WithValue(testutls.MockCtx{}, auth.UserCtxKey, user))
 	assert.Equal(t, user, u)
 	assert.Equal(t, user.ID, testutls.MockID)

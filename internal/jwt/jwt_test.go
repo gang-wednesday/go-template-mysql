@@ -22,7 +22,7 @@ func TestNew(t *testing.T) {
 		algo         string
 		secret       string
 		minSecretLen int
-		req          models.User
+		req          models.Author
 		wantErr      bool
 		want         jwt.Service
 		error        string
@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 			algo:         "HS256",
 			secret:       "g0r$kt3$t1ng",
 			minSecretLen: 1,
-			req: models.User{
+			req: models.Author{
 				Username: null.StringFrom("johndoe"),
 				Email:    null.StringFrom("johndoe@mail.com"),
 			},
@@ -75,7 +75,7 @@ func TestGenerateToken(t *testing.T) {
 		algo         string
 		secret       string
 		minSecretLen int
-		req          models.User
+		req          models.Author
 		wantErr      bool
 		want         string
 	}{
@@ -102,7 +102,7 @@ func TestGenerateToken(t *testing.T) {
 			algo:         "HS256",
 			secret:       "g0r$kt3$t1ng",
 			minSecretLen: 1,
-			req: models.User{
+			req: models.Author{
 				RoleID:   null.IntFrom(1),
 				Username: null.StringFrom("johndoe"),
 				Email:    null.StringFrom("johndoe@mail.com"),

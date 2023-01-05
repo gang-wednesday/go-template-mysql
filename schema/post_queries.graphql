@@ -1,0 +1,8 @@
+extend type Query {
+    myPosts: [Post]!
+    postById(id: ID!): Post!
+    postByUser(userId: ID!): PostPayload
+    postSearch(input: PostFilterByTitle): PostPayload
+    posts(input: PostPagination): PostPayload
+    
+}

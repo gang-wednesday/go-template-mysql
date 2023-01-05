@@ -69,29 +69,6 @@ var RoleTableColumns = struct {
 
 // Generated where
 
-type whereHelperint struct{ field string }
-
-func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
 var RoleWhere = struct {
 	ID          whereHelperint
 	AccessLevel whereHelperint
@@ -110,14 +87,14 @@ var RoleWhere = struct {
 
 // RoleRels is where relationship names are stored.
 var RoleRels = struct {
-	Users string
+	Authors string
 }{
-	Users: "Users",
+	Authors: "Authors",
 }
 
 // roleR is where relationships are stored.
 type roleR struct {
-	Users UserSlice `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
+	Authors AuthorSlice `boil:"Authors" json:"Authors" toml:"Authors" yaml:"Authors"`
 }
 
 // NewStruct creates a new relationship struct
@@ -125,11 +102,11 @@ func (*roleR) NewStruct() *roleR {
 	return &roleR{}
 }
 
-func (r *roleR) GetUsers() UserSlice {
+func (r *roleR) GetAuthors() AuthorSlice {
 	if r == nil {
 		return nil
 	}
-	return r.Users
+	return r.Authors
 }
 
 // roleL is where Load methods for each relationship are stored.
@@ -137,8 +114,8 @@ type roleL struct{}
 
 var (
 	roleAllColumns            = []string{"id", "access_level", "name", "created_at", "updated_at", "deleted_at"}
-	roleColumnsWithoutDefault = []string{"access_level", "name", "created_at", "updated_at", "deleted_at"}
-	roleColumnsWithDefault    = []string{"id"}
+	roleColumnsWithoutDefault = []string{"access_level", "name", "updated_at", "deleted_at"}
+	roleColumnsWithDefault    = []string{"id", "created_at"}
 	rolePrimaryKeyColumns     = []string{"id"}
 	roleGeneratedColumns      = []string{}
 )
@@ -421,30 +398,46 @@ func (q roleQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// Users retrieves all the user's Users with an executor.
-func (o *Role) Users(mods ...qm.QueryMod) userQuery {
+// Authors retrieves all the author's Authors with an executor.
+func (o *Role) Authors(mods ...qm.QueryMod) authorQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("`users`.`role_id`=?", o.ID),
+		qm.Where("`authors`.`role_id`=?", o.ID),
 	)
 
-	return Users(queryMods...)
+	return Authors(queryMods...)
 }
 
-// LoadUsers allows an eager lookup of values, cached into the
+// LoadAuthors allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (roleL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeRole interface{}, mods queries.Applicator) error {
+func (roleL) LoadAuthors(ctx context.Context, e boil.ContextExecutor, singular bool, maybeRole interface{}, mods queries.Applicator) error {
 	var slice []*Role
 	var object *Role
 
 	if singular {
-		object = maybeRole.(*Role)
+		var ok bool
+		object, ok = maybeRole.(*Role)
+		if !ok {
+			object = new(Role)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeRole)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeRole))
+			}
+		}
 	} else {
-		slice = *maybeRole.(*[]*Role)
+		s, ok := maybeRole.(*[]*Role)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeRole)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeRole))
+			}
+		}
 	}
 
 	args := make([]interface{}, 0, 1)
@@ -475,8 +468,8 @@ func (roleL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular boo
 	}
 
 	query := NewQuery(
-		qm.From(`users`),
-		qm.WhereIn(`users.role_id in ?`, args...),
+		qm.From(`authors`),
+		qm.WhereIn(`authors.role_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -484,22 +477,22 @@ func (roleL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular boo
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load users")
+		return errors.Wrap(err, "failed to eager load authors")
 	}
 
-	var resultSlice []*User
+	var resultSlice []*Author
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice users")
+		return errors.Wrap(err, "failed to bind eager loaded slice authors")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on users")
+		return errors.Wrap(err, "failed to close results in eager load on authors")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for authors")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
+	if len(authorAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -507,10 +500,10 @@ func (roleL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular boo
 		}
 	}
 	if singular {
-		object.R.Users = resultSlice
+		object.R.Authors = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &userR{}
+				foreign.R = &authorR{}
 			}
 			foreign.R.Role = object
 		}
@@ -520,9 +513,9 @@ func (roleL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular boo
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if queries.Equal(local.ID, foreign.RoleID) {
-				local.R.Users = append(local.R.Users, foreign)
+				local.R.Authors = append(local.R.Authors, foreign)
 				if foreign.R == nil {
-					foreign.R = &userR{}
+					foreign.R = &authorR{}
 				}
 				foreign.R.Role = local
 				break
@@ -533,11 +526,11 @@ func (roleL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular boo
 	return nil
 }
 
-// AddUsers adds the given related objects to the existing relationships
+// AddAuthors adds the given related objects to the existing relationships
 // of the role, optionally inserting them as new records.
-// Appends related to o.R.Users.
+// Appends related to o.R.Authors.
 // Sets related.R.Role appropriately.
-func (o *Role) AddUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+func (o *Role) AddAuthors(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Author) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -547,9 +540,9 @@ func (o *Role) AddUsers(ctx context.Context, exec boil.ContextExecutor, insert b
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE `users` SET %s WHERE %s",
+				"UPDATE `authors` SET %s WHERE %s",
 				strmangle.SetParamNames("`", "`", 0, []string{"role_id"}),
-				strmangle.WhereClause("`", "`", 0, userPrimaryKeyColumns),
+				strmangle.WhereClause("`", "`", 0, authorPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -568,15 +561,15 @@ func (o *Role) AddUsers(ctx context.Context, exec boil.ContextExecutor, insert b
 
 	if o.R == nil {
 		o.R = &roleR{
-			Users: related,
+			Authors: related,
 		}
 	} else {
-		o.R.Users = append(o.R.Users, related...)
+		o.R.Authors = append(o.R.Authors, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &userR{
+			rel.R = &authorR{
 				Role: o,
 			}
 		} else {
@@ -586,14 +579,14 @@ func (o *Role) AddUsers(ctx context.Context, exec boil.ContextExecutor, insert b
 	return nil
 }
 
-// SetUsers removes all previously related items of the
+// SetAuthors removes all previously related items of the
 // role replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.Role's Users accordingly.
-// Replaces o.R.Users with related.
-// Sets related.R.Role's Users accordingly.
-func (o *Role) SetUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
-	query := "update `users` set `role_id` = null where `role_id` = ?"
+// Sets o.R.Role's Authors accordingly.
+// Replaces o.R.Authors with related.
+// Sets related.R.Role's Authors accordingly.
+func (o *Role) SetAuthors(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Author) error {
+	query := "update `authors` set `role_id` = null where `role_id` = ?"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -606,7 +599,7 @@ func (o *Role) SetUsers(ctx context.Context, exec boil.ContextExecutor, insert b
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.Users {
+		for _, rel := range o.R.Authors {
 			queries.SetScanner(&rel.RoleID, nil)
 			if rel.R == nil {
 				continue
@@ -614,16 +607,16 @@ func (o *Role) SetUsers(ctx context.Context, exec boil.ContextExecutor, insert b
 
 			rel.R.Role = nil
 		}
-		o.R.Users = nil
+		o.R.Authors = nil
 	}
 
-	return o.AddUsers(ctx, exec, insert, related...)
+	return o.AddAuthors(ctx, exec, insert, related...)
 }
 
-// RemoveUsers relationships from objects passed in.
-// Removes related items from R.Users (uses pointer comparison, removal does not keep order)
+// RemoveAuthors relationships from objects passed in.
+// Removes related items from R.Authors (uses pointer comparison, removal does not keep order)
 // Sets related.R.Role.
-func (o *Role) RemoveUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
+func (o *Role) RemoveAuthors(ctx context.Context, exec boil.ContextExecutor, related ...*Author) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -643,16 +636,16 @@ func (o *Role) RemoveUsers(ctx context.Context, exec boil.ContextExecutor, relat
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.Users {
+		for i, ri := range o.R.Authors {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.Users)
+			ln := len(o.R.Authors)
 			if ln > 1 && i < ln-1 {
-				o.R.Users[i] = o.R.Users[ln-1]
+				o.R.Authors[i] = o.R.Authors[ln-1]
 			}
-			o.R.Users = o.R.Users[:ln-1]
+			o.R.Authors = o.R.Authors[:ln-1]
 			break
 		}
 	}
@@ -1273,4 +1266,9 @@ func RoleExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, e
 	}
 
 	return exists, nil
+}
+
+// Exists checks if the Role row exists.
+func (o *Role) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+	return RoleExists(ctx, exec, o.ID)
 }

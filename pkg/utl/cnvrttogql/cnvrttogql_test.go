@@ -12,21 +12,21 @@ import (
 
 func TestUsersToGraphQlUsers(t *testing.T) {
 	type args struct {
-		u models.UserSlice
+		u models.AuthorSlice
 	}
 	tests := []struct {
 		name string
 		args args
-		want []*graphql.User
+		want []*graphql.Author
 	}{
 		{
 			name: "Success",
 			args: args{
-				u: models.UserSlice{{
+				u: models.AuthorSlice{{
 					ID: 1,
 				}},
 			},
-			want: []*graphql.User{
+			want: []*graphql.Author{
 				{
 					ID: "1",
 				},

@@ -20,11 +20,11 @@ func FindPostbyTitle(title string, ctx context.Context) (*models.Post, error) {
 	return models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.Title), title)).One(ctx, contextExecutor)
 }
 
-func FindPostByAuthor(authorId int, ctx context.Context) (models.PostSlice, int64, error) {
+func FindPostByAuthorId(authorId int, ctx context.Context) (models.PostSlice, int64, error) {
 	contextExecutor := getContextExecutor(nil)
 	posts, err := models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.AuthorID), authorId)).All(ctx, contextExecutor)
 	if err != nil {
-		return models.PostSlice{}, 0, err
+		return nil, 0, err
 	}
 
 	count, err := models.Authors(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.AuthorID), authorId)).Count(ctx, contextExecutor)
@@ -38,7 +38,7 @@ func FindPosts(queryMods []qm.QueryMod, ctx context.Context) (models.PostSlice, 
 	if err != nil {
 		return models.PostSlice{}, 0, err
 	}
-
+	queryMods = append(queryMods, qm.Offset(0))
 	count, err := models.Authors(queryMods...).Count(ctx, contextExecutor)
 
 	return posts, count, err

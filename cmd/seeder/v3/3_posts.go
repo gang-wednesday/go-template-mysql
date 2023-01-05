@@ -45,5 +45,5 @@ func main() {
 		zaplog.Logger.Error("error while seeding", err)
 	}
 
-	_ = utls.SeedData("authors", insertQuery)
+	_ = utls.SeedData("posts", insertQuery)
 }

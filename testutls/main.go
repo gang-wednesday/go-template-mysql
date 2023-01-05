@@ -34,13 +34,27 @@ var MockJWTSecret = "12345678901234567890123456789012345678901234567890123456789
 var MockQuery = `{"query":"query users { users { users { id } } }","variables":{}}"`
 var MockWhitelistedQuery = `{"query":"query Schema {  __schema { queryType { kind } } }","variables":{}}"`
 
-func MockUser() *models.Author {
-	return &models.Author{}
+func MockAuthor() *models.Author {
+	return &models.Author{
+		ID:                 MockID,
+		Username:           null.StringFrom("username"),
+		Email:              null.StringFrom(MockEmail),
+		Password:           null.StringFrom("password"),
+		Active:             null.BoolFrom(true),
+		AuthorAddress:      null.StringFrom("address"),
+		LastLogin:          null.NewTime(time.Time{}, false),
+		LastPasswordChange: null.NewTime(time.Time{}, false),
+		Token:              null.StringFrom(MockToken),
+		RoleID:             null.IntFrom(1),
+		DeletedAt:          null.NewTime(time.Time{}, false),
+		UpdatedAt:          null.NewTime(time.Time{}, false),
+		CreatedAt:          null.NewTime(time.Time{}, false),
+	}
 }
-func MockUsers() []*models.Author {
+func MockAuthors() []*models.Author {
 	return []*models.Author{
 		{
-
+			ID:       MockID,
 			Username: null.StringFrom("username"),
 			Email:    null.StringFrom(MockEmail),
 		},

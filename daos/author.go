@@ -13,7 +13,7 @@ import (
 
 func FindAuthorByEmail(email string, ctx context.Context) (*models.Author, error) {
 	contextExecutor := getContextExecutor(nil)
-	return models.Authors(qm.Where(fmt.Sprintf("%s=?", models.AuthorColumns.Token), email)).One(ctx, contextExecutor)
+	return models.Authors(qm.Where(fmt.Sprintf("%s=?", models.AuthorColumns.Email), email)).One(ctx, contextExecutor)
 }
 func FindAuthorById(id int, ctx context.Context) (*models.Author, error) {
 	contextExecutor := getContextExecutor(nil)

@@ -41,7 +41,7 @@ func TestGetUser(t *testing.T) {
 				userID:    testutls.MockID,
 				dbQueries: []testutls.QueryData{},
 			},
-			want: testutls.MockUser(),
+			want: testutls.MockAuthor(),
 		},
 		{
 			name: "Success_WithCacheMiss",
@@ -65,20 +65,20 @@ func TestGetUser(t *testing.T) {
 							"role_id",
 							"active",
 						}).AddRow(
-							testutls.MockUser().ID,
+							testutls.MockAuthor().ID,
 
-							testutls.MockUser().Username,
-							testutls.MockUser().Email,
+							testutls.MockAuthor().Username,
+							testutls.MockAuthor().Email,
 
-							testutls.MockUser().Token,
+							testutls.MockAuthor().Token,
 
-							testutls.MockUser().RoleID,
-							testutls.MockUser().Active,
+							testutls.MockAuthor().RoleID,
+							testutls.MockAuthor().Active,
 						),
 					},
 				},
 			},
-			want: testutls.MockUser(),
+			want: testutls.MockAuthor(),
 		},
 	}
 

@@ -1,0 +1,5 @@
+extend type Query {
+    me: Author!
+    authors(pagination: AuthorPagination): AuthorsPayload!
+    authorSearch(filter: AuthorFilter): AuthorsPayload
+}

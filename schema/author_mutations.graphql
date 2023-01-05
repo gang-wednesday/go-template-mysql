@@ -1,0 +1,5 @@
+extend type Mutation {
+    createUser(input: AuthorCreateInput!): Author!
+    updateUser(input: AuthorUpdateInput): Author!
+    deleteUser(input: AuthorDeleteInput!): Boolean! 
+}

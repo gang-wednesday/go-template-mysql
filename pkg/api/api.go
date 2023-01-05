@@ -59,9 +59,8 @@ func Start(cfg *config.Configuration) (*echo.Echo, error) {
 	graphQLPathname := "/graphql"
 	playgroundHandler := playground.Handler("GraphQL playground", graphQLPathname)
 
-	observers := map[string]chan *graphql.User{}
 	graphqlHandler := handler.New(graphql.NewExecutableSchema(graphql.Config{
-		Resolvers: &resolver.Resolver{Observers: observers},
+		Resolvers: &resolver.Resolver{},
 	}))
 
 	if os.Getenv("ENVIRONMENT_NAME") == "local" {

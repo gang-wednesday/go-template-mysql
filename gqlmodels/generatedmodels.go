@@ -2,6 +2,59 @@
 
 package gqlmodels
 
+type Author struct {
+	ID                 string  `json:"id"`
+	UserName           *string `json:"userName"`
+	Email              *string `json:"email"`
+	Name               *string `json:"name"`
+	Active             *bool   `json:"active"`
+	Address            *string `json:"address"`
+	LastLogin          *string `json:"lastLogin"`
+	LastPasswordChange *string `json:"lastPasswordChange"`
+	Token              *string `json:"token"`
+	Role               *Role   `json:"role"`
+	CreatedAt          *string `json:"createdAt"`
+	UpdatedAt          *string `json:"updatedAt"`
+	DeletedAt          *string `json:"deletedAt"`
+	Posts              []*Post `json:"posts"`
+}
+
+type AuthorCreateInput struct {
+	UserName *string `json:"userName"`
+	Email    *string `json:"email"`
+	Name     *string `json:"name"`
+	Password string  `json:"password"`
+	Address  *string `json:"address"`
+	RoleID   string  `json:"roleId"`
+	Active   *bool   `json:"active"`
+}
+
+type AuthorDeleteInput struct {
+	ID string `json:"id"`
+}
+
+type AuthorFilter struct {
+	Search *string `json:"search"`
+}
+
+type AuthorPagination struct {
+	Limit int `json:"limit"`
+	Page  int `json:"page"`
+}
+
+type AuthorUpdateInput struct {
+	ID       string  `json:"id"`
+	UserName *string `json:"userName"`
+	Email    *string `json:"email"`
+	Name     *string `json:"name"`
+	Address  *string `json:"address"`
+}
+
+type AuthorsPayload struct {
+	Authors []*Author `json:"authors"`
+	Total   int       `json:"total"`
+}
+
 type BooleanFilter struct {
 	IsTrue  *bool `json:"isTrue"`
 	IsFalse *bool `json:"isFalse"`
@@ -46,18 +99,61 @@ type LoginResponse struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type Post struct {
+	ID        string  `json:"id"`
+	Title     *string `json:"title"`
+	Content   *string `json:"content"`
+	Author    *Author `json:"author"`
+	CreatedAt *string `json:"createdAt"`
+	UpdatedAt *string `json:"updatedAt"`
+	DeletedAt *string `json:"deletedAt"`
+}
+
+type PostCreateInput struct {
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
+}
+
+type PostDeleteInput struct {
+	ID string `json:"id"`
+}
+
+type PostFilterByTitle struct {
+	Title *string `json:"title"`
+}
+
+type PostPagination struct {
+	Limit int `json:"limit"`
+	Page  int `json:"page"`
+}
+
+type PostPayload struct {
+	Post *Post `json:"post"`
+}
+
+type PostUpdateInput struct {
+	ID      string  `json:"id"`
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
+}
+
+type PostsPayload struct {
+	Posts []*Post `json:"posts"`
+	Total *int    `json:"total"`
+}
+
 type RefreshTokenResponse struct {
 	Token string `json:"token"`
 }
 
 type Role struct {
-	ID          string  `json:"id"`
-	AccessLevel int     `json:"accessLevel"`
-	Name        string  `json:"name"`
-	UpdatedAt   *int    `json:"updatedAt"`
-	DeletedAt   *int    `json:"deletedAt"`
-	CreatedAt   *int    `json:"createdAt"`
-	Users       []*User `json:"users"`
+	ID          string    `json:"id"`
+	AccessLevel int       `json:"accessLevel"`
+	Name        string    `json:"name"`
+	UpdatedAt   *int      `json:"updatedAt"`
+	DeletedAt   *int      `json:"deletedAt"`
+	CreatedAt   *int      `json:"createdAt"`
+	Authors     []*Author `json:"authors"`
 }
 
 type RoleCreateInput struct {
@@ -67,11 +163,6 @@ type RoleCreateInput struct {
 
 type RoleDeletePayload struct {
 	ID string `json:"id"`
-}
-
-type RoleFilter struct {
-	Search *string    `json:"search"`
-	Where  *RoleWhere `json:"where"`
 }
 
 type RolePagination struct {
@@ -89,18 +180,6 @@ type RoleUpdateInput struct {
 	UpdatedAt   *int    `json:"updatedAt"`
 	DeletedAt   *int    `json:"deletedAt"`
 	CreatedAt   *int    `json:"createdAt"`
-}
-
-type RoleWhere struct {
-	ID          *IDFilter     `json:"id"`
-	AccessLevel *IntFilter    `json:"accessLevel"`
-	Name        *StringFilter `json:"name"`
-	UpdatedAt   *IntFilter    `json:"updatedAt"`
-	DeletedAt   *IntFilter    `json:"deletedAt"`
-	CreatedAt   *IntFilter    `json:"createdAt"`
-	Users       *UserWhere    `json:"users"`
-	Or          *RoleWhere    `json:"or"`
-	And         *RoleWhere    `json:"and"`
 }
 
 type RolesCreateInput struct {
@@ -136,91 +215,4 @@ type StringFilter struct {
 	NotEndWithStrict   *string  `json:"notEndWithStrict"`
 	ContainStrict      *string  `json:"containStrict"`
 	NotContainStrict   *string  `json:"notContainStrict"`
-}
-
-type User struct {
-	ID                 string  `json:"id"`
-	FirstName          *string `json:"firstName"`
-	LastName           *string `json:"lastName"`
-	Username           *string `json:"username"`
-	Password           *string `json:"password"`
-	Email              *string `json:"email"`
-	Mobile             *string `json:"mobile"`
-	Address            *string `json:"address"`
-	Active             *bool   `json:"active"`
-	LastLogin          *int    `json:"lastLogin"`
-	LastPasswordChange *int    `json:"lastPasswordChange"`
-	Token              *string `json:"token"`
-	Role               *Role   `json:"role"`
-	CreatedAt          *int    `json:"createdAt"`
-	DeletedAt          *int    `json:"deletedAt"`
-	UpdatedAt          *int    `json:"updatedAt"`
-}
-
-type UserCreateInput struct {
-	FirstName string  `json:"firstName"`
-	LastName  string  `json:"lastName"`
-	Username  string  `json:"username"`
-	Password  string  `json:"password"`
-	Email     string  `json:"email"`
-	RoleID    string  `json:"roleId"`
-	Mobile    string  `json:"mobile"`
-	Address   *string `json:"address"`
-	Active    *bool   `json:"active"`
-}
-
-type UserDeletePayload struct {
-	ID string `json:"id"`
-}
-
-type UserFilter struct {
-	Search *string    `json:"search"`
-	Where  *UserWhere `json:"where"`
-}
-
-type UserPagination struct {
-	Limit int `json:"limit"`
-	Page  int `json:"page"`
-}
-
-type UserPayload struct {
-	User *User `json:"user"`
-}
-
-type UserUpdateInput struct {
-	ID        string  `json:"id"`
-	FirstName *string `json:"firstName"`
-	LastName  *string `json:"lastName"`
-	Mobile    *string `json:"mobile"`
-	Address   *string `json:"address"`
-}
-
-type UserWhere struct {
-	ID                 *IDFilter      `json:"id"`
-	FirstName          *StringFilter  `json:"firstName"`
-	LastName           *StringFilter  `json:"lastName"`
-	Username           *StringFilter  `json:"username"`
-	Password           *StringFilter  `json:"password"`
-	Email              *StringFilter  `json:"email"`
-	Mobile             *StringFilter  `json:"mobile"`
-	Address            *StringFilter  `json:"address"`
-	Active             *BooleanFilter `json:"active"`
-	LastLogin          *IntFilter     `json:"lastLogin"`
-	LastPasswordChange *IntFilter     `json:"lastPasswordChange"`
-	Token              *StringFilter  `json:"token"`
-	Role               *RoleWhere     `json:"role"`
-	CreatedAt          *IntFilter     `json:"createdAt"`
-	DeletedAt          *IntFilter     `json:"deletedAt"`
-	UpdatedAt          *IntFilter     `json:"updatedAt"`
-	Or                 *UserWhere     `json:"or"`
-	And                *UserWhere     `json:"and"`
-}
-
-type UsersCreateInput struct {
-	Users []*UserCreateInput `json:"users"`
-}
-
-type UsersPayload struct {
-	Users []*User `json:"users"`
-	Total int     `json:"total"`
 }

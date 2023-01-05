@@ -13,9 +13,9 @@ type Author struct {
 	LastPasswordChange *string `json:"lastPasswordChange"`
 	Token              *string `json:"token"`
 	Role               *Role   `json:"role"`
-	CreatedAt          *string `json:"createdAt"`
-	UpdatedAt          *string `json:"updatedAt"`
-	DeletedAt          *string `json:"deletedAt"`
+	CreatedAt          *int    `json:"createdAt"`
+	UpdatedAt          *int    `json:"updatedAt"`
+	DeletedAt          *int    `json:"deletedAt"`
 	Posts              []*Post `json:"posts"`
 }
 
@@ -104,9 +104,9 @@ type Post struct {
 	Title     *string `json:"title"`
 	Content   *string `json:"content"`
 	Author    *Author `json:"author"`
-	CreatedAt *string `json:"createdAt"`
-	UpdatedAt *string `json:"updatedAt"`
-	DeletedAt *string `json:"deletedAt"`
+	CreatedAt *int    `json:"createdAt"`
+	UpdatedAt *int    `json:"updatedAt"`
+	DeletedAt *int    `json:"deletedAt"`
 }
 
 type PostCreateInput struct {

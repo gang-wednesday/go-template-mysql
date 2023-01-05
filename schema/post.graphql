@@ -3,9 +3,9 @@ type Post{
     title: String
     content: String
 	author: Author!		
-    createdAt: String
-    updatedAt: String
-    deletedAt: String
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
 }
 
 input PostUpdateInput{

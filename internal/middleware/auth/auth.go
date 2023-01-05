@@ -44,7 +44,7 @@ func FromContext(ctx context.Context) *models.Author {
 }
 
 // UserIDFromContext ...
-func UserIDFromContext(ctx context.Context) int {
+func AuthorIDFromContext(ctx context.Context) int {
 	user := FromContext(ctx)
 	if user != nil {
 		return user.ID

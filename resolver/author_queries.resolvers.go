@@ -7,12 +7,21 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
+	"go-template/pkg/utl/cnvrttogql"
 )
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+	authorID := auth.AuthorIDFromContext(ctx)
+	author, err := daos.FindAuthorById(authorID, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return cnvrttogql.AuthorToGraphQlAuthor(author, 0), nil
+
 }
 
 // Authors is the resolver for the authors field.

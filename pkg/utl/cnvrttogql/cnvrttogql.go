@@ -33,7 +33,13 @@ func AuthorToGraphQlAuthor(u *models.Author, count int) *graphql.Author {
 			role = u.R.Role
 		}
 	}
-
+	var posts []*models.Post
+	if count <= constants.MaxDepth {
+		u.L.LoadPosts(context.Background(), boil.GetContextDB(), true, u, nil) //nolint:errcheck
+		if u.R != nil {
+			posts = u.R.Posts
+		}
+	}
 	return &graphql.Author{
 		ID:        strconv.Itoa(u.ID),
 		UserName:  convert.NullDotStringToPointerString(u.Username),
@@ -44,9 +50,17 @@ func AuthorToGraphQlAuthor(u *models.Author, count int) *graphql.Author {
 		UpdatedAt: convert.NullDotTimeToPointerInt(u.UpdatedAt),
 		DeletedAt: convert.NullDotTimeToPointerInt(u.DeletedAt),
 		Address:   convert.NullDotStringToPointerString(u.AuthorAddress),
-
-		Role: RoleToGraphqlRole(role, count),
+		Posts:     PostsToGraphqlPosts(posts, count),
+		Role:      RoleToGraphqlRole(role, count),
 	}
+}
+
+func PostsToGraphqlPosts(a models.PostSlice, count int) []*graphql.Post {
+	var r []*graphql.Post
+	for _, e := range a {
+		r = append(r, PostToGraphQlPost(e, count))
+	}
+	return r
 }
 
 func PostToGraphQlPost(p *models.Post, count int) *graphql.Post {

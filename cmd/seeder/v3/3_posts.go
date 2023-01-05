@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -29,11 +30,16 @@ func randSeq(n int) string {
 // to generate one query for a particular author
 func query(authorId int) string {
 	c := "insert into posts(title,content,author_id) values"
-	return fmt.Sprintf(c+" (%s, %s, %d);", randSeq(10), randSeq(30), authorId)
+	return fmt.Sprintf(c+" ('%s', '%s', %d);", randSeq(10), randSeq(30), authorId)
 }
 
 func main() {
+
 	rand.Seed(time.Now().UnixNano())
+	err := godotenv.Load("./.env.local")
+	if err != nil {
+		fmt.Print(err)
+	}
 
 	db, _ := mysql.Connect()
 	roles, err := models.Authors(qm.OrderBy("id ASC")).All(context.Background(), db)

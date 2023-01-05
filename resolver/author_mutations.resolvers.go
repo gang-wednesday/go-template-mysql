@@ -12,7 +12,16 @@ import (
 
 // CreateAuthor is the resolver for the createAuthor field.
 func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.AuthorCreateInput) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: CreateAuthor - createAuthor"))
+
+	// active := null.NewBool(false, false)
+	// if input.Active != nil {
+	// 	active = null.BoolFrom(*input.Active)
+	// }
+	// roleId, _ := strconv.Atoi(input.RoleID)
+	// author := models.Author{
+	// 	Username: null.StringFrom(*input.UserName),
+	// }
+	panic("")
 }
 
 // UpdateAuthor is the resolver for the updateAuthor field.
@@ -23,20 +32,4 @@ func (r *mutationResolver) UpdateAuthor(ctx context.Context, input *gqlmodels.Au
 // DeleteAuthor is the resolver for the deleteAuthor field.
 func (r *mutationResolver) DeleteAuthor(ctx context.Context, input gqlmodels.AuthorDeleteInput) (bool, error) {
 	panic(fmt.Errorf("not implemented: DeleteAuthor - deleteAuthor"))
-}
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) CreateUser(ctx context.Context, input gqlmodels.AuthorCreateInput) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
-}
-func (r *mutationResolver) UpdateUser(ctx context.Context, input *gqlmodels.AuthorUpdateInput) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: UpdateUser - updateUser"))
-}
-func (r *mutationResolver) DeleteUser(ctx context.Context, input gqlmodels.AuthorDeleteInput) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteUser - deleteUser"))
 }

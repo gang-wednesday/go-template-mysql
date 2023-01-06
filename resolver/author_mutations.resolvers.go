@@ -16,12 +16,11 @@ import (
 	"go-template/pkg/utl/cnvrttogql"
 	"strconv"
 
-	"github.com/volatiletech/null/v8"
+	null "github.com/volatiletech/null/v8"
 )
 
 // CreateAuthor is the resolver for the createAuthor field.
 func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.AuthorCreateInput) (*gqlmodels.Author, error) {
-
 	active := null.NewBool(false, false)
 	if input.Active != nil {
 		active = null.BoolFrom(*input.Active)
@@ -48,7 +47,6 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 	}
 	graphAuthor := cnvrttogql.AuthorToGraphQlAuthor(&author, 1)
 	return graphAuthor, nil
-
 }
 
 // UpdateAuthor is the resolver for the updateAuthor field.

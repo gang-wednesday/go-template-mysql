@@ -30,7 +30,8 @@ input PostFilterByTitle {
 }
 
 type PostPayload{
-    post: Post
+    posts: [Post]
+    postCount: Int
 }
 
 type PostsPayload{

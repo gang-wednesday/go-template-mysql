@@ -23,7 +23,6 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodels.Author, error) {
 		return nil, err
 	}
 	return cnvrttogql.AuthorToGraphQlAuthor(author, 0), nil
-
 }
 
 // Authors is the resolver for the authors field.

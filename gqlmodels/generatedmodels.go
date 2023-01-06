@@ -128,7 +128,8 @@ type PostPagination struct {
 }
 
 type PostPayload struct {
-	Post *Post `json:"post"`
+	Posts     []*Post `json:"posts"`
+	PostCount *int    `json:"postCount"`
 }
 
 type PostUpdateInput struct {

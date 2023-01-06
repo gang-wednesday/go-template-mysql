@@ -95,7 +95,8 @@ type ComplexityRoot struct {
 	}
 
 	PostPayload struct {
-		Post func(childComplexity int) int
+		PostCount func(childComplexity int) int
+		Posts     func(childComplexity int) int
 	}
 
 	PostsPayload struct {
@@ -108,8 +109,8 @@ type ComplexityRoot struct {
 		Authors      func(childComplexity int, pagination *AuthorPagination) int
 		Me           func(childComplexity int) int
 		MyPosts      func(childComplexity int) int
+		PostByAuthor func(childComplexity int, userID string) int
 		PostByID     func(childComplexity int, id string) int
-		PostByUser   func(childComplexity int, userID string) int
 		PostSearch   func(childComplexity int, input *PostFilterByTitle) int
 		Posts        func(childComplexity int, input *PostPagination) int
 	}
@@ -164,7 +165,7 @@ type QueryResolver interface {
 	AuthorSearch(ctx context.Context, filter *AuthorFilter) (*AuthorsPayload, error)
 	MyPosts(ctx context.Context) ([]*Post, error)
 	PostByID(ctx context.Context, id string) (*Post, error)
-	PostByUser(ctx context.Context, userID string) (*PostPayload, error)
+	PostByAuthor(ctx context.Context, userID string) (*PostPayload, error)
 	PostSearch(ctx context.Context, input *PostFilterByTitle) (*PostPayload, error)
 	Posts(ctx context.Context, input *PostPagination) (*PostPayload, error)
 }
@@ -450,12 +451,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.UpdatedAt(childComplexity), true
 
-	case "PostPayload.post":
-		if e.complexity.PostPayload.Post == nil {
+	case "PostPayload.postCount":
+		if e.complexity.PostPayload.PostCount == nil {
 			break
 		}
 
-		return e.complexity.PostPayload.Post(childComplexity), true
+		return e.complexity.PostPayload.PostCount(childComplexity), true
+
+	case "PostPayload.posts":
+		if e.complexity.PostPayload.Posts == nil {
+			break
+		}
+
+		return e.complexity.PostPayload.Posts(childComplexity), true
 
 	case "PostsPayload.posts":
 		if e.complexity.PostsPayload.Posts == nil {
@@ -509,6 +517,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.MyPosts(childComplexity), true
 
+	case "Query.postByAuthor":
+		if e.complexity.Query.PostByAuthor == nil {
+			break
+		}
+
+		args, err := ec.field_Query_postByAuthor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PostByAuthor(childComplexity, args["userId"].(string)), true
+
 	case "Query.postById":
 		if e.complexity.Query.PostByID == nil {
 			break
@@ -520,18 +540,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.PostByID(childComplexity, args["id"].(string)), true
-
-	case "Query.postByUser":
-		if e.complexity.Query.PostByUser == nil {
-			break
-		}
-
-		args, err := ec.field_Query_postByUser_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.PostByUser(childComplexity, args["userId"].(string)), true
 
 	case "Query.postSearch":
 		if e.complexity.Query.PostSearch == nil {
@@ -914,7 +922,8 @@ input PostFilterByTitle {
 }
 
 type PostPayload{
-    post: Post
+    posts: [Post]
+    postCount: Int
 }
 
 type PostsPayload{
@@ -924,7 +933,7 @@ type PostsPayload{
 	{Name: "../schema/post_queries.graphql", Input: `extend type Query {
     myPosts: [Post]!
     postById(id: ID!): Post!
-    postByUser(userId: ID!): PostPayload
+    postByAuthor(userId: ID!): PostPayload
     postSearch(input: PostFilterByTitle): PostPayload
     posts(input: PostPagination): PostPayload
     
@@ -1161,6 +1170,21 @@ func (ec *executionContext) field_Query_authors_args(ctx context.Context, rawArg
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_postByAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_postById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1173,21 +1197,6 @@ func (ec *executionContext) field_Query_postById_args(ctx context.Context, rawAr
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_postByUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["userId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["userId"] = arg0
 	return args, nil
 }
 
@@ -2904,8 +2913,8 @@ func (ec *executionContext) fieldContext_Post_deletedAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _PostPayload_post(ctx context.Context, field graphql.CollectedField, obj *PostPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PostPayload_post(ctx, field)
+func (ec *executionContext) _PostPayload_posts(ctx context.Context, field graphql.CollectedField, obj *PostPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PostPayload_posts(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2918,7 +2927,7 @@ func (ec *executionContext) _PostPayload_post(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Post, nil
+		return obj.Posts, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2927,12 +2936,12 @@ func (ec *executionContext) _PostPayload_post(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*Post)
+	res := resTmp.([]*Post)
 	fc.Result = res
-	return ec.marshalOPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, field.Selections, res)
+	return ec.marshalOPost2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PostPayload_post(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PostPayload_posts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PostPayload",
 		Field:      field,
@@ -2956,6 +2965,47 @@ func (ec *executionContext) fieldContext_PostPayload_post(ctx context.Context, f
 				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PostPayload_postCount(ctx context.Context, field graphql.CollectedField, obj *PostPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PostPayload_postCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PostPayload_postCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PostPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3383,8 +3433,8 @@ func (ec *executionContext) fieldContext_Query_postById(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_postByUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_postByUser(ctx, field)
+func (ec *executionContext) _Query_postByAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_postByAuthor(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3397,7 +3447,7 @@ func (ec *executionContext) _Query_postByUser(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().PostByUser(rctx, fc.Args["userId"].(string))
+		return ec.resolvers.Query().PostByAuthor(rctx, fc.Args["userId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3411,7 +3461,7 @@ func (ec *executionContext) _Query_postByUser(ctx context.Context, field graphql
 	return ec.marshalOPostPayload2ᚖgoᚑtemplateᚋgqlmodelsᚐPostPayload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_postByUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_postByAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3419,8 +3469,10 @@ func (ec *executionContext) fieldContext_Query_postByUser(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "post":
-				return ec.fieldContext_PostPayload_post(ctx, field)
+			case "posts":
+				return ec.fieldContext_PostPayload_posts(ctx, field)
+			case "postCount":
+				return ec.fieldContext_PostPayload_postCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostPayload", field.Name)
 		},
@@ -3432,7 +3484,7 @@ func (ec *executionContext) fieldContext_Query_postByUser(ctx context.Context, f
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_postByUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_postByAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3475,8 +3527,10 @@ func (ec *executionContext) fieldContext_Query_postSearch(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "post":
-				return ec.fieldContext_PostPayload_post(ctx, field)
+			case "posts":
+				return ec.fieldContext_PostPayload_posts(ctx, field)
+			case "postCount":
+				return ec.fieldContext_PostPayload_postCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostPayload", field.Name)
 		},
@@ -3531,8 +3585,10 @@ func (ec *executionContext) fieldContext_Query_posts(ctx context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "post":
-				return ec.fieldContext_PostPayload_post(ctx, field)
+			case "posts":
+				return ec.fieldContext_PostPayload_posts(ctx, field)
+			case "postCount":
+				return ec.fieldContext_PostPayload_postCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostPayload", field.Name)
 		},
@@ -7391,9 +7447,13 @@ func (ec *executionContext) _PostPayload(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("PostPayload")
-		case "post":
+		case "posts":
 
-			out.Values[i] = ec._PostPayload_post(ctx, field, obj)
+			out.Values[i] = ec._PostPayload_posts(ctx, field, obj)
+
+		case "postCount":
+
+			out.Values[i] = ec._PostPayload_postCount(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7566,7 +7626,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "postByUser":
+		case "postByAuthor":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -7575,7 +7635,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_postByUser(ctx, field)
+				res = ec._Query_postByAuthor(ctx, field)
 				return res
 			}
 

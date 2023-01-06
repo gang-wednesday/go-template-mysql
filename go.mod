@@ -12,6 +12,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/mock v1.6.0
+	github.com/gomodule/redigo v1.8.9
 	github.com/gorilla/websocket v1.5.0
 	github.com/joho/godotenv v1.3.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12

@@ -27,8 +27,8 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 	}
 	roleId, _ := strconv.Atoi(input.RoleID)
 	author := models.Author{
-		Username: null.StringFrom(*input.UserName),
-		Email:    null.StringFrom(*input.Email),
+		Username: null.StringFrom(input.UserName),
+		Email:    null.StringFrom(input.Email),
 
 		RoleID: null.IntFrom(roleId),
 		Active: active,

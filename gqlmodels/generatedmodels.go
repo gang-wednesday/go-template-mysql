@@ -20,13 +20,13 @@ type Author struct {
 }
 
 type AuthorCreateInput struct {
-	UserName *string `json:"userName"`
-	Email    *string `json:"email"`
-	Name     *string `json:"name"`
-	Password string  `json:"password"`
-	Address  *string `json:"address"`
-	RoleID   string  `json:"roleId"`
-	Active   *bool   `json:"active"`
+	UserName string `json:"userName"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Address  string `json:"address"`
+	RoleID   string `json:"roleId"`
+	Active   *bool  `json:"active"`
 }
 
 type AuthorDeleteInput struct {

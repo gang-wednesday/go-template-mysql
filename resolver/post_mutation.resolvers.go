@@ -69,5 +69,18 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostU
 
 // DeletePost is the resolver for the deletePost field.
 func (r *mutationResolver) DeletePost(ctx context.Context, input gqlmodels.PostDeleteInput) (bool, error) {
-	panic("")
+	pid, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return false, fmt.Errorf("incorrect post id")
+	}
+	post, err := daos.FindPostbyId(pid, ctx)
+	if err != nil {
+		return false, err
+	}
+	_, err = daos.DeletePost(*post, ctx)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+
 }

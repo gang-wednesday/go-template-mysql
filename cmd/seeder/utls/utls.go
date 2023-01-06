@@ -6,10 +6,17 @@ import (
 	"go-template/pkg/utl/zaplog"
 	"log"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // SeedData ...
 func SeedData(tableName string, rawQuery string) error {
+	err := godotenv.Load("./.env.local")
+	if err != nil {
+		fmt.Print(err)
+	}
+
 	db, err := mysql.Connect()
 
 	if err != nil {

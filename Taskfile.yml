@@ -10,6 +10,11 @@ tasks:
   dbstruct-gen:
     cmds:
       -  go run ./cmd/gendbmdls/main.go
+  seed:
+    cmds:
+      - go run ./cmd/seeder/v1/1_roles.go
+      - go run ./cmd/seeder/v2/2_authors.go
+      - go run ./cmd/seeder/v3/3_posts.go
   # test:
   #   cmds:
   #     - echo " *** Running Coverage Tests ***"

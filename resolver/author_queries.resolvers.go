@@ -7,17 +7,37 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
+	"go-template/pkg/utl/cnvrttogql"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+	authorID := auth.AuthorIDFromContext(ctx)
+	author, err := daos.FindAuthorById(authorID, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return cnvrttogql.AuthorToGraphQlAuthor(author, 0), nil
 }
 
 // Authors is the resolver for the authors field.
 func (r *queryResolver) Authors(ctx context.Context, pagination *gqlmodels.AuthorPagination) (*gqlmodels.AuthorsPayload, error) {
-	panic(fmt.Errorf("not implemented: Authors - authors"))
+	var queryMods []qm.QueryMod
+	if pagination != nil {
+		if pagination.Limit != 0 {
+			queryMods = append(queryMods, qm.Limit(pagination.Limit), qm.Offset(pagination.Page*pagination.Limit))
+		}
+	}
+	authors, count, err := daos.FindAllAuthorWithCount(queryMods, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &gqlmodels.AuthorsPayload{Total: int(count), Authors: cnvrttogql.AuthorssToGraphQlAuthors(authors, 1)}, nil
 }
 
 // AuthorSearch is the resolver for the authorSearch field.

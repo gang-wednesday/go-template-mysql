@@ -9,9 +9,9 @@ type Author{
     lastPasswordChange: String
     token: String
     role: Role
-    createdAt: String
-    updatedAt: String
-    deletedAt: String
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
     posts: [Post!]
 
 }

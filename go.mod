@@ -12,7 +12,6 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/mock v1.6.0
-	github.com/gomodule/redigo v1.8.3
 	github.com/gorilla/websocket v1.5.0
 	github.com/joho/godotenv v1.3.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
@@ -21,7 +20,6 @@ require (
 	github.com/lib/pq v1.10.6
 	github.com/masahiro331/go-commitlinter v0.0.0-20220207112004-c66fa942bad3
 	github.com/nbutton23/zxcvbn-go v0.0.0-20180912185939-ae427f1e4c1d
-	github.com/rafaeljusto/redigomock/v3 v3.0.1
 	github.com/rs/zerolog v1.18.0
 	github.com/rubenv/sql-migrate v1.2.0
 	github.com/spf13/viper v1.12.0

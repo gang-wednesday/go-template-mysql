@@ -7,22 +7,47 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
+	"go-template/pkg/utl/cnvrttogql"
+	"strconv"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // MyPosts is the resolver for the myPosts field.
 func (r *queryResolver) MyPosts(ctx context.Context) ([]*gqlmodels.Post, error) {
-	panic(fmt.Errorf("not implemented: MyPosts - myPosts"))
+	authorID := auth.AuthorIDFromContext(ctx)
+	posts, _, err := daos.FindPostByAuthorId(authorID, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return cnvrttogql.PostsToGraphqlPosts(posts, 1), nil
 }
 
 // PostByID is the resolver for the postById field.
 func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Post, error) {
-	panic(fmt.Errorf("not implemented: PostByID - postById"))
+	postId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+	post, err := daos.FindPostbyId(postId, ctx)
+	return cnvrttogql.PostToGraphQlPost(post, 1), nil
 }
 
-// PostByUser is the resolver for the postByUser field.
-func (r *queryResolver) PostByUser(ctx context.Context, userID string) (*gqlmodels.PostPayload, error) {
-	panic(fmt.Errorf("not implemented: PostByUser - postByUser"))
+// PostByAuthor is the resolver for the postByAuthor field.
+func (r *queryResolver) PostByAuthor(ctx context.Context, userID string) (*gqlmodels.PostPayload, error) {
+	authorId, err := strconv.Atoi(userID)
+	if err != nil {
+		return nil, err
+	}
+	posts, postCount, err := daos.FindPostByAuthorId(authorId, ctx)
+	if err != nil {
+		return nil, err
+	}
+	pc := int(postCount)
+	return &gqlmodels.PostPayload{Posts: cnvrttogql.PostsToGraphqlPosts(posts, 1), PostCount: &pc}, err
 }
 
 // PostSearch is the resolver for the postSearch field.
@@ -32,5 +57,16 @@ func (r *queryResolver) PostSearch(ctx context.Context, input *gqlmodels.PostFil
 
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context, input *gqlmodels.PostPagination) (*gqlmodels.PostPayload, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
+	var queryMods []qm.QueryMod
+	if input != nil {
+		if input.Limit != 0 {
+			queryMods = append(queryMods, qm.Limit(input.Limit), qm.Offset(input.Limit))
+		}
+	}
+	posts, postCount, err := daos.FindPosts(queryMods, ctx)
+	if err != nil {
+		return nil, err
+	}
+	pc := int(postCount)
+	return &gqlmodels.PostPayload{Posts: cnvrttogql.PostsToGraphqlPosts(posts, 1), PostCount: &pc}, nil
 }

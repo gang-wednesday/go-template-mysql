@@ -76,12 +76,15 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		ChangePassword func(childComplexity int, oldPassword string, newPassword string) int
+		CreateAuthor   func(childComplexity int, input AuthorCreateInput) int
+		CreatePost     func(childComplexity int, input PostCreateInput) int
 		CreateRole     func(childComplexity int, input RoleCreateInput) int
-		CreateUser     func(childComplexity int, input AuthorCreateInput) int
-		DeleteUser     func(childComplexity int, input AuthorDeleteInput) int
+		DeleteAuthor   func(childComplexity int, input AuthorDeleteInput) int
+		DeletePost     func(childComplexity int, input PostDeleteInput) int
 		Login          func(childComplexity int, username string, password string) int
 		RefreshToken   func(childComplexity int, token string) int
-		UpdateUser     func(childComplexity int, input *AuthorUpdateInput) int
+		UpdateAuthor   func(childComplexity int, input *AuthorUpdateInput) int
+		UpdatePost     func(childComplexity int, input PostUpdateInput) int
 	}
 
 	Post struct {
@@ -95,7 +98,8 @@ type ComplexityRoot struct {
 	}
 
 	PostPayload struct {
-		Post func(childComplexity int) int
+		PostCount func(childComplexity int) int
+		Posts     func(childComplexity int) int
 	}
 
 	PostsPayload struct {
@@ -108,8 +112,8 @@ type ComplexityRoot struct {
 		Authors      func(childComplexity int, pagination *AuthorPagination) int
 		Me           func(childComplexity int) int
 		MyPosts      func(childComplexity int) int
+		PostByAuthor func(childComplexity int, userID string) int
 		PostByID     func(childComplexity int, id string) int
-		PostByUser   func(childComplexity int, userID string) int
 		PostSearch   func(childComplexity int, input *PostFilterByTitle) int
 		Posts        func(childComplexity int, input *PostPagination) int
 	}
@@ -153,9 +157,12 @@ type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*LoginResponse, error)
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*ChangePasswordResponse, error)
 	RefreshToken(ctx context.Context, token string) (*RefreshTokenResponse, error)
-	CreateUser(ctx context.Context, input AuthorCreateInput) (*Author, error)
-	UpdateUser(ctx context.Context, input *AuthorUpdateInput) (*Author, error)
-	DeleteUser(ctx context.Context, input AuthorDeleteInput) (bool, error)
+	CreateAuthor(ctx context.Context, input AuthorCreateInput) (*Author, error)
+	UpdateAuthor(ctx context.Context, input *AuthorUpdateInput) (*Author, error)
+	DeleteAuthor(ctx context.Context, input AuthorDeleteInput) (bool, error)
+	CreatePost(ctx context.Context, input PostCreateInput) (*Post, error)
+	UpdatePost(ctx context.Context, input PostUpdateInput) (*Post, error)
+	DeletePost(ctx context.Context, input PostDeleteInput) (bool, error)
 	CreateRole(ctx context.Context, input RoleCreateInput) (*RolePayload, error)
 }
 type QueryResolver interface {
@@ -164,7 +171,7 @@ type QueryResolver interface {
 	AuthorSearch(ctx context.Context, filter *AuthorFilter) (*AuthorsPayload, error)
 	MyPosts(ctx context.Context) ([]*Post, error)
 	PostByID(ctx context.Context, id string) (*Post, error)
-	PostByUser(ctx context.Context, userID string) (*PostPayload, error)
+	PostByAuthor(ctx context.Context, userID string) (*PostPayload, error)
 	PostSearch(ctx context.Context, input *PostFilterByTitle) (*PostPayload, error)
 	Posts(ctx context.Context, input *PostPagination) (*PostPayload, error)
 }
@@ -329,6 +336,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ChangePassword(childComplexity, args["oldPassword"].(string), args["newPassword"].(string)), true
 
+	case "Mutation.createAuthor":
+		if e.complexity.Mutation.CreateAuthor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createAuthor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateAuthor(childComplexity, args["input"].(AuthorCreateInput)), true
+
+	case "Mutation.createPost":
+		if e.complexity.Mutation.CreatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePost(childComplexity, args["input"].(PostCreateInput)), true
+
 	case "Mutation.createRole":
 		if e.complexity.Mutation.CreateRole == nil {
 			break
@@ -341,29 +372,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateRole(childComplexity, args["input"].(RoleCreateInput)), true
 
-	case "Mutation.createUser":
-		if e.complexity.Mutation.CreateUser == nil {
+	case "Mutation.deleteAuthor":
+		if e.complexity.Mutation.DeleteAuthor == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_createUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_deleteAuthor_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(AuthorCreateInput)), true
+		return e.complexity.Mutation.DeleteAuthor(childComplexity, args["input"].(AuthorDeleteInput)), true
 
-	case "Mutation.deleteUser":
-		if e.complexity.Mutation.DeleteUser == nil {
+	case "Mutation.deletePost":
+		if e.complexity.Mutation.DeletePost == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_deleteUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_deletePost_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteUser(childComplexity, args["input"].(AuthorDeleteInput)), true
+		return e.complexity.Mutation.DeletePost(childComplexity, args["input"].(PostDeleteInput)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -389,17 +420,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RefreshToken(childComplexity, args["token"].(string)), true
 
-	case "Mutation.updateUser":
-		if e.complexity.Mutation.UpdateUser == nil {
+	case "Mutation.updateAuthor":
+		if e.complexity.Mutation.UpdateAuthor == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_updateUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_updateAuthor_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["input"].(*AuthorUpdateInput)), true
+		return e.complexity.Mutation.UpdateAuthor(childComplexity, args["input"].(*AuthorUpdateInput)), true
+
+	case "Mutation.updatePost":
+		if e.complexity.Mutation.UpdatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePost(childComplexity, args["input"].(PostUpdateInput)), true
 
 	case "Post.author":
 		if e.complexity.Post.Author == nil {
@@ -450,12 +493,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.UpdatedAt(childComplexity), true
 
-	case "PostPayload.post":
-		if e.complexity.PostPayload.Post == nil {
+	case "PostPayload.postCount":
+		if e.complexity.PostPayload.PostCount == nil {
 			break
 		}
 
-		return e.complexity.PostPayload.Post(childComplexity), true
+		return e.complexity.PostPayload.PostCount(childComplexity), true
+
+	case "PostPayload.posts":
+		if e.complexity.PostPayload.Posts == nil {
+			break
+		}
+
+		return e.complexity.PostPayload.Posts(childComplexity), true
 
 	case "PostsPayload.posts":
 		if e.complexity.PostsPayload.Posts == nil {
@@ -509,6 +559,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.MyPosts(childComplexity), true
 
+	case "Query.postByAuthor":
+		if e.complexity.Query.PostByAuthor == nil {
+			break
+		}
+
+		args, err := ec.field_Query_postByAuthor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PostByAuthor(childComplexity, args["userId"].(string)), true
+
 	case "Query.postById":
 		if e.complexity.Query.PostByID == nil {
 			break
@@ -520,18 +582,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.PostByID(childComplexity, args["id"].(string)), true
-
-	case "Query.postByUser":
-		if e.complexity.Query.PostByUser == nil {
-			break
-		}
-
-		args, err := ec.field_Query_postByUser_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.PostByUser(childComplexity, args["userId"].(string)), true
 
 	case "Query.postSearch":
 		if e.complexity.Query.PostSearch == nil {
@@ -751,9 +801,9 @@ var sources = []*ast.Source{
     lastPasswordChange: String
     token: String
     role: Role
-    createdAt: String
-    updatedAt: String
-    deletedAt: String
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
     posts: [Post!]
 
 }
@@ -815,9 +865,9 @@ type RefreshTokenResponse {
     token: String!
 }`, BuiltIn: false},
 	{Name: "../schema/author_mutations.graphql", Input: `extend type Mutation {
-    createUser(input: AuthorCreateInput!): Author!
-    updateUser(input: AuthorUpdateInput): Author!
-    deleteUser(input: AuthorDeleteInput!): Boolean! 
+    createAuthor(input: AuthorCreateInput!): Author!
+    updateAuthor(input: AuthorUpdateInput): Author!
+    deleteAuthor(input: AuthorDeleteInput!): Boolean! 
 }`, BuiltIn: false},
 	{Name: "../schema/author_queries.graphql", Input: `extend type Query {
     me: Author!
@@ -887,9 +937,9 @@ input BooleanFilter {
     title: String
     content: String
 	author: Author!		
-    createdAt: String
-    updatedAt: String
-    deletedAt: String
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
 }
 
 input PostUpdateInput{
@@ -914,17 +964,23 @@ input PostFilterByTitle {
 }
 
 type PostPayload{
-    post: Post
+    posts: [Post]
+    postCount: Int
 }
 
 type PostsPayload{
     posts: [Post]
     total: Int
 }`, BuiltIn: false},
+	{Name: "../schema/post_mutation.graphql", Input: `extend type Mutation {
+    createPost(input: PostCreateInput!): Post!
+    updatePost(input: PostUpdateInput!): Post!
+    deletePost(input: PostDeleteInput!): Boolean! 
+}`, BuiltIn: false},
 	{Name: "../schema/post_queries.graphql", Input: `extend type Query {
     myPosts: [Post]!
     postById(id: ID!): Post!
-    postByUser(userId: ID!): PostPayload
+    postByAuthor(userId: ID!): PostPayload
     postSearch(input: PostFilterByTitle): PostPayload
     posts(input: PostPagination): PostPayload
     
@@ -1017,6 +1073,36 @@ func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 AuthorCreateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNAuthorCreateInput2goᚑtemplateᚋgqlmodelsᚐAuthorCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PostCreateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPostCreateInput2goᚑtemplateᚋgqlmodelsᚐPostCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1032,13 +1118,13 @@ func (ec *executionContext) field_Mutation_createRole_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_deleteAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 AuthorCreateInput
+	var arg0 AuthorDeleteInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNAuthorCreateInput2goᚑtemplateᚋgqlmodelsᚐAuthorCreateInput(ctx, tmp)
+		arg0, err = ec.unmarshalNAuthorDeleteInput2goᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1047,13 +1133,13 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 AuthorDeleteInput
+	var arg0 PostDeleteInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNAuthorDeleteInput2goᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx, tmp)
+		arg0, err = ec.unmarshalNPostDeleteInput2goᚑtemplateᚋgqlmodelsᚐPostDeleteInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1101,13 +1187,28 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *AuthorUpdateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalOAuthorUpdateInput2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorUpdateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updatePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PostUpdateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPostUpdateInput2goᚑtemplateᚋgqlmodelsᚐPostUpdateInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1161,6 +1262,21 @@ func (ec *executionContext) field_Query_authors_args(ctx context.Context, rawArg
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_postByAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_postById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1173,21 +1289,6 @@ func (ec *executionContext) field_Query_postById_args(ctx context.Context, rawAr
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_postByUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["userId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["userId"] = arg0
 	return args, nil
 }
 
@@ -1711,9 +1812,9 @@ func (ec *executionContext) _Author_createdAt(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Author_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1723,7 +1824,7 @@ func (ec *executionContext) fieldContext_Author_createdAt(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1752,9 +1853,9 @@ func (ec *executionContext) _Author_updatedAt(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Author_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1764,7 +1865,7 @@ func (ec *executionContext) fieldContext_Author_updatedAt(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1793,9 +1894,9 @@ func (ec *executionContext) _Author_deletedAt(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Author_deletedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1805,7 +1906,7 @@ func (ec *executionContext) fieldContext_Author_deletedAt(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2297,8 +2398,8 @@ func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createUser(ctx, field)
+func (ec *executionContext) _Mutation_createAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createAuthor(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2311,7 +2412,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateUser(rctx, fc.Args["input"].(AuthorCreateInput))
+		return ec.resolvers.Mutation().CreateAuthor(rctx, fc.Args["input"].(AuthorCreateInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2328,7 +2429,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	return ec.marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_createAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2375,15 +2476,15 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_createAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateUser(ctx, field)
+func (ec *executionContext) _Mutation_updateAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateAuthor(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2396,7 +2497,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["input"].(*AuthorUpdateInput))
+		return ec.resolvers.Mutation().UpdateAuthor(rctx, fc.Args["input"].(*AuthorUpdateInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2413,7 +2514,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	return ec.marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2460,15 +2561,15 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_updateAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteUser(ctx, field)
+func (ec *executionContext) _Mutation_deleteAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteAuthor(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2481,7 +2582,7 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteUser(rctx, fc.Args["input"].(AuthorDeleteInput))
+		return ec.resolvers.Mutation().DeleteAuthor(rctx, fc.Args["input"].(AuthorDeleteInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2498,7 +2599,7 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_deleteAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2515,7 +2616,204 @@ func (ec *executionContext) fieldContext_Mutation_deleteUser(ctx context.Context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_deleteAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createPost(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePost(rctx, fc.Args["input"].(PostCreateInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createPost(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Post_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Post_title(ctx, field)
+			case "content":
+				return ec.fieldContext_Post_content(ctx, field)
+			case "author":
+				return ec.fieldContext_Post_author(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Post_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Post_updatedAt(ctx, field)
+			case "deletedAt":
+				return ec.fieldContext_Post_deletedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createPost_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updatePost(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdatePost(rctx, fc.Args["input"].(PostUpdateInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updatePost(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Post_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Post_title(ctx, field)
+			case "content":
+				return ec.fieldContext_Post_content(ctx, field)
+			case "author":
+				return ec.fieldContext_Post_author(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Post_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Post_updatedAt(ctx, field)
+			case "deletedAt":
+				return ec.fieldContext_Post_deletedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updatePost_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deletePost(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeletePost(rctx, fc.Args["input"].(PostDeleteInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deletePost(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deletePost_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -2804,9 +3102,9 @@ func (ec *executionContext) _Post_createdAt(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Post_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2816,7 +3114,7 @@ func (ec *executionContext) fieldContext_Post_createdAt(ctx context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2845,9 +3143,9 @@ func (ec *executionContext) _Post_updatedAt(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Post_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2857,7 +3155,7 @@ func (ec *executionContext) fieldContext_Post_updatedAt(ctx context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2886,9 +3184,9 @@ func (ec *executionContext) _Post_deletedAt(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Post_deletedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2898,14 +3196,14 @@ func (ec *executionContext) fieldContext_Post_deletedAt(ctx context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _PostPayload_post(ctx context.Context, field graphql.CollectedField, obj *PostPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PostPayload_post(ctx, field)
+func (ec *executionContext) _PostPayload_posts(ctx context.Context, field graphql.CollectedField, obj *PostPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PostPayload_posts(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2918,7 +3216,7 @@ func (ec *executionContext) _PostPayload_post(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Post, nil
+		return obj.Posts, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2927,12 +3225,12 @@ func (ec *executionContext) _PostPayload_post(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*Post)
+	res := resTmp.([]*Post)
 	fc.Result = res
-	return ec.marshalOPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, field.Selections, res)
+	return ec.marshalOPost2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PostPayload_post(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PostPayload_posts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PostPayload",
 		Field:      field,
@@ -2956,6 +3254,47 @@ func (ec *executionContext) fieldContext_PostPayload_post(ctx context.Context, f
 				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PostPayload_postCount(ctx context.Context, field graphql.CollectedField, obj *PostPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PostPayload_postCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PostPayload_postCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PostPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3383,8 +3722,8 @@ func (ec *executionContext) fieldContext_Query_postById(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_postByUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_postByUser(ctx, field)
+func (ec *executionContext) _Query_postByAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_postByAuthor(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3397,7 +3736,7 @@ func (ec *executionContext) _Query_postByUser(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().PostByUser(rctx, fc.Args["userId"].(string))
+		return ec.resolvers.Query().PostByAuthor(rctx, fc.Args["userId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3411,7 +3750,7 @@ func (ec *executionContext) _Query_postByUser(ctx context.Context, field graphql
 	return ec.marshalOPostPayload2ᚖgoᚑtemplateᚋgqlmodelsᚐPostPayload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_postByUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_postByAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3419,8 +3758,10 @@ func (ec *executionContext) fieldContext_Query_postByUser(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "post":
-				return ec.fieldContext_PostPayload_post(ctx, field)
+			case "posts":
+				return ec.fieldContext_PostPayload_posts(ctx, field)
+			case "postCount":
+				return ec.fieldContext_PostPayload_postCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostPayload", field.Name)
 		},
@@ -3432,7 +3773,7 @@ func (ec *executionContext) fieldContext_Query_postByUser(ctx context.Context, f
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_postByUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_postByAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3475,8 +3816,10 @@ func (ec *executionContext) fieldContext_Query_postSearch(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "post":
-				return ec.fieldContext_PostPayload_post(ctx, field)
+			case "posts":
+				return ec.fieldContext_PostPayload_posts(ctx, field)
+			case "postCount":
+				return ec.fieldContext_PostPayload_postCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostPayload", field.Name)
 		},
@@ -3531,8 +3874,10 @@ func (ec *executionContext) fieldContext_Query_posts(ctx context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "post":
-				return ec.fieldContext_PostPayload_post(ctx, field)
+			case "posts":
+				return ec.fieldContext_PostPayload_posts(ctx, field)
+			case "postCount":
+				return ec.fieldContext_PostPayload_postCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostPayload", field.Name)
 		},
@@ -7279,28 +7624,55 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "createUser":
+		case "createAuthor":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createUser(ctx, field)
+				return ec._Mutation_createAuthor(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "updateUser":
+		case "updateAuthor":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateUser(ctx, field)
+				return ec._Mutation_updateAuthor(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "deleteUser":
+		case "deleteAuthor":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteUser(ctx, field)
+				return ec._Mutation_deleteAuthor(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createPost":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createPost(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatePost":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updatePost(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deletePost":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deletePost(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -7391,9 +7763,13 @@ func (ec *executionContext) _PostPayload(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("PostPayload")
-		case "post":
+		case "posts":
 
-			out.Values[i] = ec._PostPayload_post(ctx, field, obj)
+			out.Values[i] = ec._PostPayload_posts(ctx, field, obj)
+
+		case "postCount":
+
+			out.Values[i] = ec._PostPayload_postCount(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7566,7 +7942,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "postByUser":
+		case "postByAuthor":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -7575,7 +7951,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_postByUser(ctx, field)
+				res = ec._Query_postByAuthor(ctx, field)
 				return res
 			}
 
@@ -8445,6 +8821,21 @@ func (ec *executionContext) marshalNPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx
 		return graphql.Null
 	}
 	return ec._Post(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPostCreateInput2goᚑtemplateᚋgqlmodelsᚐPostCreateInput(ctx context.Context, v interface{}) (PostCreateInput, error) {
+	res, err := ec.unmarshalInputPostCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPostDeleteInput2goᚑtemplateᚋgqlmodelsᚐPostDeleteInput(ctx context.Context, v interface{}) (PostDeleteInput, error) {
+	res, err := ec.unmarshalInputPostDeleteInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPostUpdateInput2goᚑtemplateᚋgqlmodelsᚐPostUpdateInput(ctx context.Context, v interface{}) (PostUpdateInput, error) {
+	res, err := ec.unmarshalInputPostUpdateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNRefreshTokenResponse2goᚑtemplateᚋgqlmodelsᚐRefreshTokenResponse(ctx context.Context, sel ast.SelectionSet, v RefreshTokenResponse) graphql.Marshaler {

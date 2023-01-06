@@ -4,7 +4,7 @@ CREATE TABLE  authors  (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username varchar(100) UNIQUE,
     email varchar(100) UNIQUE,
-    name TEXT ,
+    password TEXT ,
     active BOOLEAN,
     author_address TEXT,
     last_login TIMESTAMP,

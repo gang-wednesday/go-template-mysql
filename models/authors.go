@@ -27,7 +27,7 @@ type Author struct {
 	ID                 int         `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Username           null.String `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
 	Email              null.String `boil:"email" json:"email,omitempty" toml:"email" yaml:"email,omitempty"`
-	Name               null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	Password           null.String `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
 	Active             null.Bool   `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
 	AuthorAddress      null.String `boil:"author_address" json:"author_address,omitempty" toml:"author_address" yaml:"author_address,omitempty"`
 	LastLogin          null.Time   `boil:"last_login" json:"last_login,omitempty" toml:"last_login" yaml:"last_login,omitempty"`
@@ -46,7 +46,7 @@ var AuthorColumns = struct {
 	ID                 string
 	Username           string
 	Email              string
-	Name               string
+	Password           string
 	Active             string
 	AuthorAddress      string
 	LastLogin          string
@@ -60,7 +60,7 @@ var AuthorColumns = struct {
 	ID:                 "id",
 	Username:           "username",
 	Email:              "email",
-	Name:               "name",
+	Password:           "password",
 	Active:             "active",
 	AuthorAddress:      "author_address",
 	LastLogin:          "last_login",
@@ -76,7 +76,7 @@ var AuthorTableColumns = struct {
 	ID                 string
 	Username           string
 	Email              string
-	Name               string
+	Password           string
 	Active             string
 	AuthorAddress      string
 	LastLogin          string
@@ -90,7 +90,7 @@ var AuthorTableColumns = struct {
 	ID:                 "authors.id",
 	Username:           "authors.username",
 	Email:              "authors.email",
-	Name:               "authors.name",
+	Password:           "authors.password",
 	Active:             "authors.active",
 	AuthorAddress:      "authors.author_address",
 	LastLogin:          "authors.last_login",
@@ -255,7 +255,7 @@ var AuthorWhere = struct {
 	ID                 whereHelperint
 	Username           whereHelpernull_String
 	Email              whereHelpernull_String
-	Name               whereHelpernull_String
+	Password           whereHelpernull_String
 	Active             whereHelpernull_Bool
 	AuthorAddress      whereHelpernull_String
 	LastLogin          whereHelpernull_Time
@@ -269,7 +269,7 @@ var AuthorWhere = struct {
 	ID:                 whereHelperint{field: "`authors`.`id`"},
 	Username:           whereHelpernull_String{field: "`authors`.`username`"},
 	Email:              whereHelpernull_String{field: "`authors`.`email`"},
-	Name:               whereHelpernull_String{field: "`authors`.`name`"},
+	Password:           whereHelpernull_String{field: "`authors`.`password`"},
 	Active:             whereHelpernull_Bool{field: "`authors`.`active`"},
 	AuthorAddress:      whereHelpernull_String{field: "`authors`.`author_address`"},
 	LastLogin:          whereHelpernull_Time{field: "`authors`.`last_login`"},
@@ -319,8 +319,8 @@ func (r *authorR) GetPosts() PostSlice {
 type authorL struct{}
 
 var (
-	authorAllColumns            = []string{"id", "username", "email", "name", "active", "author_address", "last_login", "last_password_change", "token", "role_id", "created_at", "updated_at", "deleted_at"}
-	authorColumnsWithoutDefault = []string{"username", "email", "name", "active", "author_address", "last_login", "last_password_change", "token", "role_id", "created_at", "deleted_at"}
+	authorAllColumns            = []string{"id", "username", "email", "password", "active", "author_address", "last_login", "last_password_change", "token", "role_id", "created_at", "updated_at", "deleted_at"}
+	authorColumnsWithoutDefault = []string{"username", "email", "password", "active", "author_address", "last_login", "last_password_change", "token", "role_id", "created_at", "deleted_at"}
 	authorColumnsWithDefault    = []string{"id", "updated_at"}
 	authorPrimaryKeyColumns     = []string{"id"}
 	authorGeneratedColumns      = []string{}

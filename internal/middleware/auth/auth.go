@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"reflect"
 
 	"go-template/daos"
@@ -44,7 +45,7 @@ func FromContext(ctx context.Context) *models.Author {
 }
 
 // UserIDFromContext ...
-func UserIDFromContext(ctx context.Context) int {
+func AuthorIDFromContext(ctx context.Context) int {
 	user := FromContext(ctx)
 	if user != nil {
 		return user.ID
@@ -61,6 +62,7 @@ func GqlMiddleware() echo.MiddlewareFunc {
 				authorization,
 				c.Request().Header.Get(string(authorization)),
 			)
+
 			c.SetRequest(c.Request().WithContext(ctx))
 			cc := &CustomContext{c, ctx}
 			return next(cc)
@@ -125,6 +127,7 @@ func GraphQLMiddleware(
 	token, err := tokenParser.ParseToken(tokenStr)
 
 	if err != nil || !token.Valid {
+		log.Println("jojo", err)
 		return resultwrapper.HandleGraphQLError("Invalid authorization token")
 	}
 	claims := token.Claims.(jwt.MapClaims)
@@ -136,6 +139,7 @@ func GraphQLMiddleware(
 	}
 
 	email := claims["e"].(string)
+	log.Println(email)
 	user, err := daos.FindAuthorByEmail(email, ctx)
 
 	if err != nil {

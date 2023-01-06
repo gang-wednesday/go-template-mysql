@@ -12,16 +12,16 @@ import (
 )
 
 // UsersToGraphQlUsers converts array of type models.Author into array of pointer type graphql.Author
-func UsersToGraphQlUsers(u models.AuthorSlice, count int) []*graphql.Author {
+func AuthorssToGraphQlAuthors(u models.AuthorSlice, count int) []*graphql.Author {
 	var r []*graphql.Author
 	for _, e := range u {
-		r = append(r, UserToGraphQlUser(e, count))
+		r = append(r, AuthorToGraphQlAuthor(e, count))
 	}
 	return r
 }
 
 // UserToGraphQlUser converts type models.Author into pointer type graphql.Author
-func UserToGraphQlUser(u *models.Author, count int) *graphql.Author {
+func AuthorToGraphQlAuthor(u *models.Author, count int) *graphql.Author {
 	count++
 	if u == nil {
 		return nil
@@ -33,16 +33,56 @@ func UserToGraphQlUser(u *models.Author, count int) *graphql.Author {
 			role = u.R.Role
 		}
 	}
-
+	var posts []*models.Post
+	if count <= constants.MaxDepth {
+		u.L.LoadPosts(context.Background(), boil.GetContextDB(), true, u, nil) //nolint:errcheck
+		if u.R != nil {
+			posts = u.R.Posts
+		}
+	}
 	return &graphql.Author{
-		ID:       strconv.Itoa(u.ID),
-		UserName: convert.NullDotStringToPointerString(u.Username),
+		ID:        strconv.Itoa(u.ID),
+		UserName:  convert.NullDotStringToPointerString(u.Username),
+		Active:    convert.NullDotBoolToPointerBool(u.Active),
+		Email:     convert.NullDotStringToPointerString(u.Email),
+		Token:     convert.NullDotStringToPointerString(u.Token),
+		CreatedAt: convert.NullDotTimeToPointerInt(u.CreatedAt),
+		UpdatedAt: convert.NullDotTimeToPointerInt(u.UpdatedAt),
+		DeletedAt: convert.NullDotTimeToPointerInt(u.DeletedAt),
+		Address:   convert.NullDotStringToPointerString(u.AuthorAddress),
+		Posts:     PostsToGraphqlPosts(posts, count),
+		Role:      RoleToGraphqlRole(role, count),
+	}
+}
 
-		Email: convert.NullDotStringToPointerString(u.Email),
+func PostsToGraphqlPosts(a models.PostSlice, count int) []*graphql.Post {
+	var r []*graphql.Post
+	for _, e := range a {
+		r = append(r, PostToGraphQlPost(e, count))
+	}
+	return r
+}
 
-		Address: convert.NullDotStringToPointerString(u.AuthorAddress),
-		Active:  convert.NullDotBoolToPointerBool(u.Active),
-		Role:    RoleToGraphqlRole(role, count),
+func PostToGraphQlPost(p *models.Post, count int) *graphql.Post {
+	count++
+	if p == nil {
+		return nil
+	}
+	var author *models.Author
+	if count <= constants.MaxDepth {
+		p.L.LoadAuthor(context.Background(), boil.GetContextDB(), true, p, nil) //nolint:errcheck
+		if p.R != nil {
+			author = p.R.Author
+		}
+	}
+	return &graphql.Post{
+		ID:        strconv.Itoa(p.ID),
+		Title:     convert.StringToPointerString(p.Title),
+		Content:   convert.StringToPointerString(p.Content),
+		CreatedAt: convert.NullDotTimeToPointerInt(p.CreatedAt),
+		UpdatedAt: convert.NullDotTimeToPointerInt(p.UpdatedAt),
+		DeletedAt: convert.NullDotTimeToPointerInt(p.DeletedAt),
+		Author:    AuthorToGraphQlAuthor(author, count),
 	}
 }
 
@@ -66,6 +106,6 @@ func RoleToGraphqlRole(r *models.Role, count int) *graphql.Role {
 		UpdatedAt:   convert.NullDotTimeToPointerInt(r.UpdatedAt),
 		CreatedAt:   convert.NullDotTimeToPointerInt(r.CreatedAt),
 		DeletedAt:   convert.NullDotTimeToPointerInt(r.DeletedAt),
-		Authors:     UsersToGraphQlUsers(users, count),
+		Authors:     AuthorssToGraphQlAuthors(users, count),
 	}
 }

@@ -37,7 +37,7 @@ func TestAuthors(t *testing.T) {
 		NewRows(
 			[]string{"id", "username", "email", "roleId", "createdAt", "updatedAt", "deletedAt"},
 		).
-		AddRow(testutls.MockID, "username", "email", testutls.MockID, "c", "u", "d")
+		AddRow(testutls.MockID, testutls.MockUsername, testutls.MockEmail, testutls.MockID, "c", "u", "d")
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT `authors`.* FROM `authors`;")).WithArgs().WillReturnRows(rows)
 	rowCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT COUNT(*) FROM `authors`;")).
@@ -90,7 +90,7 @@ func TestMe(t *testing.T) {
 				NewRows(
 					[]string{"id", "username", "email", "roleId", "createdAt", "updatedAt", "deletedAt"},
 				).
-				AddRow(testutls.MockID, "username", "email", testutls.MockID, "c", "u", "d")
+				AddRow(testutls.MockID, testutls.MockUsername, testutls.MockEmail, testutls.MockID, "c", "u", "d")
 			mock.ExpectQuery(regexp.QuoteMeta("SELECT `authors`.* FROM `authors` WHERE (id=?) LIMIT 1")).
 				WithArgs().WillReturnRows(rows)
 

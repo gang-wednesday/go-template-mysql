@@ -34,12 +34,16 @@ var MockCount = int64(1)
 var MockJWTSecret = "1234567890123456789012345678901234567890123456789012345678901234567890"
 var MockQuery = `{"query":"query users { users { users { id } } }","variables":{}}"`
 var MockWhitelistedQuery = `{"query":"query Schema {  __schema { queryType { kind } } }","variables":{}}"`
+var MockTitle = "title"
+var MockContent = "content"
+var MockPassword = "password"
+var MockAdress = "address"
 
 func MockPost() *models.Post {
 	return &models.Post{
 		ID:        MockID,
-		Title:     "title",
-		Content:   "content",
+		Title:     MockTitle,
+		Content:   MockContent,
 		AuthorID:  MockID,
 		DeletedAt: null.NewTime(time.Time{}, false),
 		UpdatedAt: null.NewTime(time.Time{}, false),
@@ -56,11 +60,11 @@ func MockPosts() []*models.Post {
 func MockAuthor() *models.Author {
 	return &models.Author{
 		ID:                 MockID,
-		Username:           null.StringFrom("username"),
+		Username:           null.StringFrom(MockUsername),
 		Email:              null.StringFrom(MockEmail),
-		Password:           null.StringFrom("password"),
+		Password:           null.StringFrom(MockPassword),
 		Active:             null.BoolFrom(true),
-		AuthorAddress:      null.StringFrom("address"),
+		AuthorAddress:      null.StringFrom(MockAdress),
 		LastLogin:          null.NewTime(time.Time{}, false),
 		LastPasswordChange: null.NewTime(time.Time{}, false),
 		Token:              null.StringFrom(MockToken),
@@ -74,7 +78,7 @@ func MockAuthors() []*models.Author {
 	return []*models.Author{
 		{
 			ID:       MockID,
-			Username: null.StringFrom("username"),
+			Username: null.StringFrom(MockUsername),
 			Email:    null.StringFrom(MockEmail),
 		},
 	}

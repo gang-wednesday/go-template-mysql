@@ -36,7 +36,7 @@ func GetCounter(ctx context.Context, rdb *redis.Client, key string) (int64, erro
 			}
 		}
 	}
-	if counter < numberOfRequests {
+	if counter > numberOfRequests {
 		return counter, errors.New("request limit breached!!!")
 	}
 	return counter, nil

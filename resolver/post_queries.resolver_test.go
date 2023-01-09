@@ -91,7 +91,7 @@ func TestPostsById(t *testing.T) {
 				[]string{"id", "title", "content", "authorId", "createdAt", "updatedAt", "deletedAt"},
 			).
 			AddRow(testutls.MockID, "title", "content", testutls.MockID, "c", "u", "d")
-		mock.ExpectQuery("SELECT `posts`.* FROM `posts` WHERE (id=?) LIMIT 1;").WithArgs().WillReturnRows(rows)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT `posts`.* FROM `posts` WHERE (id=?) LIMIT 1;")).WithArgs().WillReturnRows(rows)
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := resolver1.Query().PostByID(context.Background(), string(testutls.MockStringId))
 			if err != nil {

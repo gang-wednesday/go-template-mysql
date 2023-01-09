@@ -30,6 +30,9 @@ func TestCreatePost(t *testing.T) {
 		t.Fatal(err)
 	}
 	boil.SetDB(db)
+	defer func() {
+		db.Close()
+	}()
 	resolver1 := Resolver{}
 	for _, tt := range cases {
 		if tt.name == "successfull post insert" {
@@ -56,6 +59,49 @@ func TestCreatePost(t *testing.T) {
 			}
 		})
 
+	}
+
+}
+
+func TestDeletePos(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "succesfull delte",
+			wantErr: false,
+		},
+	}
+	for _, tt := range cases {
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		boil.SetDB(db)
+		defer func() {
+			db.Close()
+		}()
+		rows := sqlmock.
+			NewRows(
+				[]string{"id", "title", "content", "authorId", "createdAt", "updatedAt", "deletedAt"},
+			).
+			AddRow(testutls.MockID, "title", "content", testutls.MockID, "c", "u", "d")
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT `posts`.* FROM `posts` WHERE (id=?) LIMIT 1;")).WithArgs().WillReturnRows(rows)
+		mock.ExpectExec(regexp.
+			QuoteMeta(regexp.QuoteMeta("DELETE FROM `posts` WHERE `id`="))).
+			WithArgs().
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		r := Resolver{}
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := r.Mutation().DeletePost(context.Background(), gqlmodels.PostDeleteInput{ID: "200"})
+			if err != nil && tt.wantErr == false {
+				if tt.wantErr == false {
+					t.Fatal(err)
+				}
+
+			}
+		})
 	}
 
 }

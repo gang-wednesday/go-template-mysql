@@ -125,3 +125,60 @@ func TestDeleteAuthor(t *testing.T) {
 	}
 
 }
+
+func TestUpdateAuthor(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "succesfully update author",
+			wantErr: false,
+		},
+		{
+			name:    "connection error",
+			wantErr: true,
+		},
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	boil.SetDB(db)
+	defer func() {
+		db.Close()
+	}()
+	r := Resolver{}
+	testutls.SetupEnv("../.env.local")
+	c := context.WithValue(context.Background(), auth.UserCtxKey, testutls.MockAuthor())
+
+	for _, tt := range cases {
+		if tt.name == "succesfully update author" {
+			rows := sqlmock.
+				NewRows(
+					[]string{"id", "username", "email", "role_id"},
+				).
+				AddRow(testutls.MockID, testutls.MockUsername, testutls.MockEmail, testutls.MockID)
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT `authors`.*" + " FROM `authors` WHERE (id=?) LIMIT 1;")).
+				WithArgs().WillReturnRows(rows)
+			mock.ExpectExec(regexp.
+				QuoteMeta("UPDATE `authors` SET `username`=?" + ",`email`=?,`password`=?,`active`=?" +
+					",`author_address`=?,`last_login`=?,`last_password_change`=?,`token`=?,`ro" +
+					"le_id`=?,`updated_at`=?,`deleted_at`=? WHERE `id`=?")).WithArgs().WillReturnResult(sqlmock.NewResult(1, 1))
+
+		} else {
+			mock.ExpectQuery("SELECT `authors`.*" + " FROM `authors` WHERE (id=?) LIMIT 1;").
+				WithArgs().WillReturnError(fmt.Errorf("connection error"))
+
+		}
+		_, err = r.Mutation().
+			UpdateAuthor(c, &gqlmodels.AuthorUpdateInput{UserName: &testutls.MockUsername})
+		if err != nil && tt.wantErr == false {
+			t.Fatal(err)
+		}
+		if err == nil && tt.wantErr == true {
+			t.Fatal("expected and error")
+		}
+	}
+
+}

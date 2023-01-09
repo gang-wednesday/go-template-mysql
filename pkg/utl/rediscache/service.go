@@ -32,22 +32,22 @@ func GetAuthorById(rdb *redis.Client, ctx context.Context, id int) (*models.Auth
 	return &author, nil
 }
 
-func GetAuthorByToken(rdb *redis.Client, ctx context.Context, token string) (*models.Author, error) {
+// func GetAuthorByToken(rdb *redis.Client, ctx context.Context, token string) (*models.Author, error) {
 
-	bytes, err := rdb.Get(ctx, fmt.Sprintf("user:Token:%s", token)).Bytes()
-	if err != nil {
-		if err == redis.Nil {
-			return daos.FindAuthorByToken(token, ctx)
-		}
-		return nil, err
-	}
-	var author models.Author
-	err = json.Unmarshal(bytes, &author)
-	if err != nil {
-		return nil, err
-	}
-	return &author, nil
-}
+// 	bytes, err := rdb.Get(ctx, fmt.Sprintf("user:Token:%s", token)).Bytes()
+// 	if err != nil {
+// 		if err == redis.Nil {
+// 			return daos.FindAuthorByToken(token, ctx)
+// 		}
+// 		return nil, err
+// 	}
+// 	var author models.Author
+// 	err = json.Unmarshal(bytes, &author)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &author, nil
+// }
 
 func GetRole(roleID int, ctx context.Context) (*models.Role, error) {
 	// get role cache key

@@ -27,7 +27,7 @@ func FindPostByAuthorId(authorId int, ctx context.Context) (models.PostSlice, in
 		return nil, 0, err
 	}
 
-	count, err := models.Authors(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.AuthorID), authorId)).Count(ctx, contextExecutor)
+	count, err := models.Posts(qm.Where(fmt.Sprintf("%s=?", models.PostColumns.AuthorID), authorId)).Count(ctx, contextExecutor)
 
 	return posts, count, err
 }

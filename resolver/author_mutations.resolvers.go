@@ -35,7 +35,7 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 	}
 	cfg, err := config.Load()
 	if err != nil {
-		return nil, fmt.Errorf("error in loading config ")
+		return nil, fmt.Errorf("error in loading config %s", err)
 	}
 	// creating new secure service
 	sec := service.Secure(cfg)

@@ -36,7 +36,6 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostC
 	return cnvrttogql.PostToGraphQlPost(&p, 1), nil
 	// 	Content: null.StringFrom(*input.Content),
 	// }
-
 }
 
 // UpdatePost is the resolver for the updatePost field.
@@ -64,7 +63,6 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostU
 		return nil, err
 	}
 	return cnvrttogql.PostToGraphQlPost(post, 1), err
-
 }
 
 // DeletePost is the resolver for the deletePost field.
@@ -82,5 +80,4 @@ func (r *mutationResolver) DeletePost(ctx context.Context, input gqlmodels.PostD
 		return false, err
 	}
 	return true, nil
-
 }

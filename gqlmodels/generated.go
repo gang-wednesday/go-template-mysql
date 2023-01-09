@@ -822,11 +822,11 @@ input AuthorFilter {
 
 
 input AuthorCreateInput {
-    userName: String
-    email: String
-    name: String
+    userName: String!
+    email: String!
+    name: String!
     password: String!
-    address: String
+    address: String!
     roleId: ID!
     active: Boolean
 }
@@ -6438,7 +6438,7 @@ func (ec *executionContext) unmarshalInputAuthorCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
-			it.UserName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.UserName, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6446,7 +6446,7 @@ func (ec *executionContext) unmarshalInputAuthorCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-			it.Email, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6454,7 +6454,7 @@ func (ec *executionContext) unmarshalInputAuthorCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6470,7 +6470,7 @@ func (ec *executionContext) unmarshalInputAuthorCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
-			it.Address, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Address, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

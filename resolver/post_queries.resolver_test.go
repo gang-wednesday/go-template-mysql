@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 	"go-template/gqlmodels"
 	"go-template/testutls"
 	"regexp"
@@ -135,6 +136,51 @@ func TestMyPosts(t *testing.T) {
 			_, err := resolver1.Query().MyPosts(context.Background())
 			if err != nil {
 				t.Fatal(err)
+			}
+		})
+	}
+
+}
+
+func TestPostByAuthors(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "succesfully get all post of a author",
+			wantErr: false,
+		},
+	}
+	for _, tt := range cases {
+		resolver1 := Resolver{}
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		boil.SetDB(db)
+		//mocking get all post by author query
+		rows := sqlmock.
+			NewRows(
+				[]string{"id", "title", "content", "authorId", "createdAt", "updatedAt", "deletedAt"},
+			).
+			AddRow(testutls.MockID, "title", "content", testutls.MockID, "c", "u", "d")
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT `posts`.* FROM `posts` WHERE (author_id=?);")).WithArgs().WillReturnRows(rows)
+		//mocking post coung query
+		rowCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT COUNT(*) FROM `posts` WHERE (author_id=?);")).
+			WithArgs().
+			WillReturnRows(rowCount)
+		t.Run(tt.name, func(t *testing.T) {
+
+			_, err := resolver1.Query().PostByAuthor(context.Background(), fmt.Sprint(testutls.MockID))
+			if err != nil {
+				if tt.wantErr == false {
+					t.Fatal(err)
+				}
+			}
+			if tt.wantErr == true && err != nil {
+				t.Fatal("expected an error")
 			}
 		})
 	}

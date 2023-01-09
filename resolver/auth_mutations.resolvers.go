@@ -14,6 +14,7 @@ import (
 	"go-template/internal/service"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
+	"log"
 
 	null "github.com/volatiletech/null/v8"
 )
@@ -21,12 +22,15 @@ import (
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*gqlmodels.LoginResponse, error) {
 	u, err := daos.FindAuthorByUsername(username, ctx)
+
 	if err != nil {
 		return nil, err
 	}
 	// loading configurations
+
 	cfg, err := loadConfig()
 	if err != nil {
+
 		return nil, err
 	}
 	// creating new secure and token generation service
@@ -38,6 +42,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	}
 
 	if !u.Password.Valid || (!sec.HashMatchesPassword(u.Password.String, password)) {
+		log.Println(u.Password.String)
 		return nil, fmt.Errorf("username or password does not exist ")
 	}
 

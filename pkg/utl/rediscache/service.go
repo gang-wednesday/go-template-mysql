@@ -4,19 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"go-template/daos"
 	"go-template/models"
-	redisutil "go-template/pkg/utl/redisUtil"
 	"go-template/pkg/utl/resultwrapper"
 
 	"github.com/go-redis/redis/v8"
 )
 
-func GetAuthorById(ctx context.Context, id int) (*models.Author, error) {
-	rdb := redisutil.GetClient()
+func GetAuthorById(rdb *redis.Client, ctx context.Context, id int) (*models.Author, error) {
+
+	log.Println(rdb)
 	bytes, err := rdb.Get(ctx, fmt.Sprintf("user%d", id)).Bytes()
 	if err != nil {
+		log.Println(err)
 		if err == redis.Nil {
 			return daos.FindAuthorById(id, ctx)
 		}
@@ -30,8 +32,8 @@ func GetAuthorById(ctx context.Context, id int) (*models.Author, error) {
 	return &author, nil
 }
 
-func GetAuthorByToken(ctx context.Context, token string) (*models.Author, error) {
-	rdb := redisutil.GetClient()
+func GetAuthorByToken(rdb *redis.Client, ctx context.Context, token string) (*models.Author, error) {
+
 	bytes, err := rdb.Get(ctx, fmt.Sprintf("user:Token:%s", token)).Bytes()
 	if err != nil {
 		if err == redis.Nil {
@@ -59,8 +61,8 @@ func GetRole(roleID int, ctx context.Context) (*models.Role, error) {
 	return role, nil
 }
 
-func PostById(ctx context.Context, id int) (*models.Post, error) {
-	rdb := redisutil.GetClient()
+func PostById(rdb *redis.Client, ctx context.Context, id int) (*models.Post, error) {
+
 	bytes, err := rdb.Get(ctx, fmt.Sprintf("posts%d", id)).Bytes()
 	if err != nil {
 		if err == redis.Nil {

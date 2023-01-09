@@ -20,7 +20,7 @@ import (
 // CreateRole is the resolver for the createRole field.
 func (r *mutationResolver) CreateRole(ctx context.Context, input gqlmodels.RoleCreateInput) (*gqlmodels.RolePayload, error) {
 	userID := auth.AuthorIDFromContext(ctx)
-	user, err := rediscache.GetUser(userID, ctx)
+	user, err := rediscache.GetAuthorById(ctx, userID)
 	if err != nil {
 		return &gqlmodels.RolePayload{}, resultwrapper.ResolverSQLError(err, "data")
 	}

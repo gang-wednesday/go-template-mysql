@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
 	"go-template/testutls"
 	"regexp"
 	"testing"
@@ -67,6 +68,60 @@ func TestCreateAuthor(t *testing.T) {
 			t.Fatal("expected an error")
 		}
 
+	}
+
+}
+
+func TestDeleteAuthor(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "succesfully deleted the author",
+			wantErr: false,
+		}, {
+			name:    "failed deleting the error",
+			wantErr: true,
+		},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	boil.SetDB(db)
+	defer func() {
+		db.Close()
+	}()
+	r := Resolver{}
+	testutls.SetupEnv("../.env.local")
+	c := context.WithValue(context.Background(), auth.UserCtxKey, testutls.MockAuthor())
+	for _, tt := range cases {
+		if tt.name == "succesfully deleted the author" {
+			rows := sqlmock.
+				NewRows(
+					[]string{"id", "username", "email", "role_id"},
+				).
+				AddRow(testutls.MockID, testutls.MockUsername, testutls.MockEmail, testutls.MockID)
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT `authors`.*" + " FROM `authors` WHERE (id=?) LIMIT 1;")).
+				WithArgs().WillReturnRows(rows)
+			mock.ExpectExec(regexp.
+				QuoteMeta(regexp.QuoteMeta("DELETE FROM `authors` WHERE `id`="))).
+				WithArgs().
+				WillReturnResult(sqlmock.NewResult(1, 1))
+		} else {
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT `authors`.* FROM `authors`")).
+				WithArgs().WillReturnError(fmt.Errorf("connection error"))
+
+		}
+		_, err := r.Mutation().DeleteAuthor(c, gqlmodels.AuthorDeleteInput{ID: fmt.Sprint(testutls.MockID)})
+		if err != nil && tt.wantErr == false {
+			t.Fatal(err)
+		}
+		if err == nil && tt.wantErr == true {
+			t.Fatal("expeted and error")
+		}
 	}
 
 }

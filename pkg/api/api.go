@@ -12,6 +12,7 @@ import (
 	"go-template/internal/config"
 	"go-template/internal/jwt"
 	authMw "go-template/internal/middleware/auth"
+	"go-template/internal/middleware/throttle"
 	"go-template/internal/mysql"
 	"go-template/internal/server"
 	"go-template/resolver"
@@ -53,6 +54,7 @@ func Start(cfg *config.Configuration) (*echo.Echo, error) {
 
 	gqlMiddleware := authMw.GqlMiddleware()
 	// throttlerMiddleware puts the current user's IP address into context of gqlgen
+	// throttlerMiddleware :
 
 	graphQLPathname := "/graphql"
 	playgroundHandler := playground.Handler("GraphQL playground", graphQLPathname)
@@ -74,14 +76,14 @@ func Start(cfg *config.Configuration) (*echo.Echo, error) {
 		res := c.Response()
 		graphqlHandler.ServeHTTP(res, req)
 		return nil
-	}, gqlMiddleware)
+	}, gqlMiddleware, throttle.ThrottlingMiddleware)
 
 	e.GET(graphQLPathname, func(c echo.Context) error {
 		req := c.Request()
 		res := c.Response()
 		graphqlHandler.ServeHTTP(res, req)
 		return nil
-	}, gqlMiddleware)
+	}, gqlMiddleware, throttle.ThrottlingMiddleware)
 
 	graphqlHandler.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,

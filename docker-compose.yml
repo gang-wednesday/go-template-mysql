@@ -1,35 +1,40 @@
 version: '3.8'
 
 services:
-  # db:
-  #   image: mysql
-  #   ports:
-  #     - '${MYSQL_PORT}:${MYSQL_PORT}'
-  #   restart: always
-  #   depends_on:
-  #     - redis
-  #   env_file: 
-  #     - ./.env.docker
-  #   environment:
-  #     MYSQL_DATABASE: ${MYSQL_DBNAME}
-  #     MYSQL_PASSWORD: ${MYSQL_PASS}
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  db:
+    image: mysql
+    ports:
+      - '${MYSQL_PORT}:${MYSQL_PORT}'
+    restart: always
+    depends_on:
+      - redis
+    env_file: 
+      - ./.env.docker
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DBNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASS}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
         
 
   redis:
     image: redis:7-alpine
     restart: always
-    volumes: 
-      - cache:/data
+
+  wait-for-db:
+    image: atkrad/wait4x
+    depends_on:
+      - db
+    command: tcp db:3306 -t 60s -i 500ms
+
+  app:
+    build: .
+    restart: always
+    env_file:
+      - ./.env.docker
+    depends_on:
+      wait-for-db:
+        condition: service_completed_successfully
     ports:
-      - '6379:6379'  
-volumes:
-  cache:
-    driver: local
-  # wait-for-db:
-  #   image: atkrad/wait4x
-  #   depends_on:
-  #     - db
-  #   command: tcp db:3306 -t 60s -i 500ms
+      - ${SERVER_PORT}:${SERVER_PORT}
 
    

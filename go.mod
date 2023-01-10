@@ -24,6 +24,7 @@ require (
 	github.com/nbutton23/zxcvbn-go v0.0.0-20180912185939-ae427f1e4c1d
 	github.com/rs/zerolog v1.18.0
 	github.com/rubenv/sql-migrate v1.2.0
+	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.1
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.1.14

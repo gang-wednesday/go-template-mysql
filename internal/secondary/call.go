@@ -11,7 +11,7 @@ var Cb *gobreaker.CircuitBreaker
 
 func CallSecondaryApi() (string, error) {
 	body, err := Cb.Execute(func() (interface{}, error) {
-		resp, err := http.Get("http:localhost:8888/")
+		resp, err := http.Get("http://localhost:8888/")
 		if err != nil {
 			return nil, err
 		}

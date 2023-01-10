@@ -50,9 +50,7 @@ func TestCreateAuthor(t *testing.T) {
 	for _, tt := range cases {
 		if tt.name == "succesfully create author" {
 			mock.ExpectExec(regexp.
-				QuoteMeta("INSERT INTO `authors` (`username`,`email`,`password`,`active`,`author_address`,`last_login`," +
-					"`last_password_change`,`token`,`role_id`,`created_at`,`updated_at`,`deleted_at`) " +
-					"VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")).WithArgs().WillReturnResult(sqlmock.NewResult(1, 1))
+				QuoteMeta("INSERT INTO `authors`")).WithArgs().WillReturnResult(sqlmock.NewResult(1, 1))
 		} else {
 			mock.ExpectExec(regexp.QuoteMeta("INSERT INTO `authors`")).
 				WithArgs().

@@ -11,6 +11,8 @@ import (
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/cnvrttogql"
+	redisutil "go-template/pkg/utl/redisUtil"
+	"go-template/pkg/utl/rediscache"
 	"strconv"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -32,7 +34,7 @@ func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Pos
 	if err != nil {
 		return nil, err
 	}
-	post, err := daos.FindPostbyId(postId, ctx)
+	post, err := rediscache.PostById(redisutil.GetClient(), ctx, postId)
 	return cnvrttogql.PostToGraphQlPost(post, 1), nil
 }
 

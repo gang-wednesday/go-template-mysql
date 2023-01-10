@@ -11,6 +11,8 @@ import (
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/cnvrttogql"
+	redisutil "go-template/pkg/utl/redisUtil"
+	"go-template/pkg/utl/rediscache"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -18,7 +20,7 @@ import (
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*gqlmodels.Author, error) {
 	authorID := auth.AuthorIDFromContext(ctx)
-	author, err := daos.FindAuthorById(authorID, ctx)
+	author, err := rediscache.GetAuthorById(redisutil.GetClient(), ctx, authorID)
 	if err != nil {
 		return nil, err
 	}

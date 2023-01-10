@@ -13,6 +13,7 @@ import (
 	"go-template/internal/middleware/auth"
 	"go-template/models"
 	"go-template/pkg/utl/convert"
+	redisutil "go-template/pkg/utl/redisUtil"
 	"go-template/pkg/utl/rediscache"
 	"go-template/pkg/utl/resultwrapper"
 )
@@ -20,7 +21,7 @@ import (
 // CreateRole is the resolver for the createRole field.
 func (r *mutationResolver) CreateRole(ctx context.Context, input gqlmodels.RoleCreateInput) (*gqlmodels.RolePayload, error) {
 	userID := auth.AuthorIDFromContext(ctx)
-	user, err := rediscache.GetUser(userID, ctx)
+	user, err := rediscache.GetAuthorById(redisutil.GetClient(), ctx, userID)
 	if err != nil {
 		return &gqlmodels.RolePayload{}, resultwrapper.ResolverSQLError(err, "data")
 	}

@@ -24,7 +24,7 @@ func SavePostInRedis(rdb *redis.Client, ctx context.Context, id int, p *models.P
 
 }
 
-func SaveUserInRedis(rdb *redis.Client, ctx context.Context, id int, a *models.Author) error {
+func SaveAuthorInRedis(rdb *redis.Client, ctx context.Context, id int, a *models.Author) error {
 	u, err := json.Marshal(a)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func GetAuthorById(rdb *redis.Client, ctx context.Context, id int) (*models.Auth
 			if err != nil {
 				return nil, err
 			}
-			err = SaveUserInRedis(rdb, ctx, a.ID, a)
+			err = SaveAuthorInRedis(rdb, ctx, a.ID, a)
 			if err != nil {
 				log.Println(err)
 

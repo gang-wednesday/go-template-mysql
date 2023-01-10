@@ -4,5 +4,6 @@ extend type Query {
     postByAuthor(userId: ID!): PostPayload
     postSearch(input: PostFilterByTitle): PostPayload
     posts(input: PostPagination): PostPayload
+    second(id:String):String
     
 }

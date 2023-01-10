@@ -72,3 +72,8 @@ func (r *queryResolver) Posts(ctx context.Context, input *gqlmodels.PostPaginati
 	pc := int(postCount)
 	return &gqlmodels.PostPayload{Posts: cnvrttogql.PostsToGraphqlPosts(posts, 1), PostCount: &pc}, nil
 }
+
+// Second is the resolver for the second field.
+func (r *queryResolver) Second(ctx context.Context, id *string) (*string, error) {
+	panic(fmt.Errorf("not implemented: Second - second"))
+}

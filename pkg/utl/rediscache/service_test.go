@@ -7,6 +7,7 @@ import (
 	"go-template/testutls"
 	"regexp"
 	"testing"
+	"time"
 
 	redisutil "go-template/pkg/utl/redisUtil"
 
@@ -19,6 +20,56 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/volatiletech/sqlboiler/boil"
 )
+
+func TestSavePostInRedis(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "succesfully cache post in redis",
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range cases {
+		redisdb, rdmock := redismock.NewClientMock()
+		p, _ := json.Marshal(testutls.MockPost())
+		rdmock.ExpectSet(fmt.Sprintf("posts%d", testutls.MockID), p, time.Hour*6).SetVal("31")
+
+		t.Run(tt.name, func(t *testing.T) {
+			err := SavePostInRedis(redisdb, context.Background(), testutls.MockID, testutls.MockPost())
+			if err != nil && tt.wantErr == false {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestSaveAuthorInRedis(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "succesfully cache author in redis",
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range cases {
+		redisdb, rdmock := redismock.NewClientMock()
+		p, _ := json.Marshal(testutls.MockAuthor())
+		rdmock.ExpectSet(fmt.Sprintf("user%d", testutls.MockID), p, time.Hour*6).SetVal("31")
+
+		t.Run(tt.name, func(t *testing.T) {
+			err := SaveAuthorInRedis(redisdb, context.Background(), testutls.MockID, testutls.MockAuthor())
+			if err != nil && tt.wantErr == false {
+				t.Fatal(err)
+			}
+		})
+	}
+}
 
 func TestGetAuthorById(t *testing.T) {
 	cases := []struct {

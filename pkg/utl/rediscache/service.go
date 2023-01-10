@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"go-template/daos"
 	"go-template/models"
@@ -13,6 +14,25 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+func SavePostInRedis(rdb *redis.Client, ctx context.Context, id int, p *models.Post) error {
+	u, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+	err = rdb.Set(ctx, fmt.Sprintf("posts%d", id), u, time.Hour*6).Err()
+	return err
+
+}
+
+func SaveAuthorInRedis(rdb *redis.Client, ctx context.Context, id int, a *models.Author) error {
+	u, err := json.Marshal(a)
+	if err != nil {
+		return err
+	}
+	err = rdb.Set(ctx, fmt.Sprintf("user%d", id), u, time.Hour*6).Err()
+	return err
+}
+
 func GetAuthorById(rdb *redis.Client, ctx context.Context, id int) (*models.Author, error) {
 
 	log.Println(rdb)
@@ -20,7 +40,17 @@ func GetAuthorById(rdb *redis.Client, ctx context.Context, id int) (*models.Auth
 	if err != nil {
 		log.Println(err)
 		if err == redis.Nil {
-			return daos.FindAuthorById(id, ctx)
+			a, err := daos.FindAuthorById(id, ctx)
+			if err != nil {
+				return nil, err
+			}
+			err = SaveAuthorInRedis(rdb, ctx, a.ID, a)
+			if err != nil {
+				log.Println(err)
+
+			}
+			return a, nil
+
 		}
 		return nil, err
 	}
@@ -66,7 +96,15 @@ func PostById(rdb *redis.Client, ctx context.Context, id int) (*models.Post, err
 	bytes, err := rdb.Get(ctx, fmt.Sprintf("posts%d", id)).Bytes()
 	if err != nil {
 		if err == redis.Nil {
-			return daos.FindPostbyId(id, ctx)
+			post, err := daos.FindPostbyId(id, ctx)
+			if err != nil {
+				return nil, err
+			}
+			err = SavePostInRedis(rdb, ctx, post.ID, post)
+			if err != nil {
+				log.Println(err)
+			}
+			return post, nil
 		}
 		return nil, err
 	}

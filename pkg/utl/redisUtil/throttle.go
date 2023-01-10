@@ -3,6 +3,8 @@ package redisutil
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
@@ -12,8 +14,12 @@ var windowTime int64 = 1
 var numberOfRequests int64 = 100
 
 func GetClient() *redis.Client {
+	host := "localhost"
+	if os.Getenv("ENVIRONMENT_NAME") == "docker" {
+		host = "redis"
+	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     fmt.Sprintf("%s:6379", host),
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})

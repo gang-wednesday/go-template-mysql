@@ -30,9 +30,9 @@ func randSeq(n int) string {
 
 // to generate query for a particular role
 func query(sec *secure.Service, roleId int) string {
-	c := "INSERT into authors(username,email,password,role_id) VALUES"
-	return fmt.Sprintf(c+"('%s', '%s', '%s', %d);", randSeq(10), randSeq(5)+"@gmail.com",
-		sec.Hash("adminuser"), roleId)
+	c := "INSERT into authors(username,email,password,role_id,active) VALUES"
+	return fmt.Sprintf(c+"('%s', '%s', '%s', %d,%s);", randSeq(10), randSeq(5)+"@gmail.com",
+		sec.Hash("adminuser"), roleId, "TRUE")
 }
 func main() {
 

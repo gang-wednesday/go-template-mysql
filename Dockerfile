@@ -5,7 +5,7 @@ RUN mkdir  /app
 ADD . /app
 
 WORKDIR /app
-
+ENV ENVIRONMENT_NAME=docker
 RUN GOARCH=amd64 \
     GOOS=linux \
     CGO_ENABLED=0 \
@@ -16,16 +16,6 @@ RUN go build -o ./output/seeder ./cmd/seeder/main.go
 RUN go build -o ./output/migrations ./cmd/migrations/main.go
 
 
-FROM alpine:latest
-
-RUN mkdir /app/
-RUN apk add --no-cache libc6-compat 
-
-WORKDIR /app
-
-COPY --from=builder /app/.env.docker /app/
-COPY --from=builder /app/output/ /app/
-
-ENV ENVIRONMENT_NAME=docker
+CMD ["bash", "./scripts/migrate-and-run.sh"]
 EXPOSE 9000
-CMD ["./main"]
+

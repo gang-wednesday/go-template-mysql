@@ -30,9 +30,11 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostC
 	p.Content = *input.Content
 	p.Title = *input.Title
 	_, err := daos.CreatePost(p, ctx)
+
 	if err != nil {
 		return nil, err
 	}
+
 	return cnvrttogql.PostToGraphQlPost(&p, 1), nil
 	// 	Content: null.StringFrom(*input.Content),
 	// }

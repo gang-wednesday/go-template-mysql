@@ -63,7 +63,7 @@ func (r *queryResolver) Posts(ctx context.Context, input *gqlmodels.PostPaginati
 	var queryMods []qm.QueryMod
 	if input != nil {
 		if input.Limit != 0 {
-			queryMods = append(queryMods, qm.Limit(input.Limit), qm.Offset(input.Limit))
+			queryMods = append(queryMods, qm.Limit(input.Limit), qm.Offset(input.Page*input.Limit))
 		}
 	}
 	posts, postCount, err := daos.FindPosts(queryMods, ctx)

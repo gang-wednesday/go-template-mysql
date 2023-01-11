@@ -26,26 +26,26 @@ services:
     ports:
       - '6379:6379'
 
-  # wait-for-db:
-  #   image: atkrad/wait4x
-  #   depends_on:
-  #     - db
-  #   command: tcp db:3306 -t 60s -i 500ms
-  #   networks:
-  #     - backend
+  wait-for-db:
+    image: atkrad/wait4x
+    depends_on:
+      - db
+    command: tcp db:3306 -t 60s -i 500ms
+    networks:
+      - backend
 
-  # app:
-  #   build: .
-  #   restart: always
-  #   env_file:
-  #     - ./.env.docker
-  #   depends_on:
-  #     wait-for-db:
-  #       condition: service_completed_successfully
-  #   networks:
-  #     - backend
-  #   ports:
-  #     - '9000:9000'
+  app:
+    build: .
+    restart: always
+    env_file:
+      - ./.env.docker
+    depends_on:
+      wait-for-db:
+        condition: service_completed_successfully
+    networks:
+      - backend
+    ports:
+      - '9000:9000'
 networks:
   backend:
 

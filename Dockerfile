@@ -33,6 +33,7 @@ COPY ./.env.docker /app/output/cmd/seeder/output/build/
 COPY ./.env.docker /app/output/cmd/seeder/output/
 COPY ./.env.docker /app/output/cmd/seeder/
 COPY ./.env.docker /app/output/cmd/
+COPY ./.env.docker /app/
 COPY ./scripts/ /app/
 COPY --from=builder /app/internal/migrations/ /app/internal/migrations/
 CMD ["bash","./migrate-and-run.sh"]

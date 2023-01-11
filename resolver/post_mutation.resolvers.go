@@ -29,13 +29,13 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostC
 	}
 	p.Content = *input.Content
 	p.Title = *input.Title
-	_, err := daos.CreatePost(p, ctx)
+	insertedPost, err := daos.CreatePost(p, ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return cnvrttogql.PostToGraphQlPost(&p, 1), nil
+	return cnvrttogql.PostToGraphQlPost(&insertedPost, 1), nil
 	// 	Content: null.StringFrom(*input.Content),
 	// }
 }
@@ -51,8 +51,8 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostU
 		return nil, err
 	}
 	authorID := auth.AuthorIDFromContext(ctx)
-	if post.AuthorID == authorID {
-		return nil, fmt.Errorf("author does not own the post")
+	if post.AuthorID != authorID {
+		return nil, fmt.Errorf("author does not own the post %d,%d", post.AuthorID, authorID)
 	}
 	if input.Title != nil {
 		post.Title = *input.Title

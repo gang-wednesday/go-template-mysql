@@ -41,11 +41,11 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 	sec := service.Secure(cfg)
 	author.Password = null.StringFrom(sec.Hash(author.Password.String))
 
-	_, err = daos.CreateAuthor(author, ctx)
+	insertedAuthor, err := daos.CreateAuthor(author, ctx)
 	if err != nil {
 		return nil, err
 	}
-	graphAuthor := cnvrttogql.AuthorToGraphQlAuthor(&author, 1)
+	graphAuthor := cnvrttogql.AuthorToGraphQlAuthor(insertedAuthor, 1)
 	return graphAuthor, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-template/pkg/utl/convert"
+	"log"
 	"os"
 	"strconv"
 
@@ -56,7 +57,7 @@ func FileName() string {
 func LoadEnv() error {
 	envName := "ENVIRONMENT_NAME"
 	env := os.Getenv(envName)
-
+	log.Println(env)
 	if env == "" {
 		env = "local"
 	}

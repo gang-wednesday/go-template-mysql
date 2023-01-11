@@ -46,7 +46,7 @@ func main() {
 			fmt.Println(filepath + "/" + file.Name())
 			cmd := exec.
 				Command("go", "build", "-o",
-					fmt.Sprintf("./cmd/seeder/output/%s", stripFileExtension(file.Name())), filepath+"/"+file.Name())
+					fmt.Sprintf("./cmd/seeder/output/build/%s", stripFileExtension(file.Name())), filepath+"/"+file.Name())
 			data, err := cmd.CombinedOutput()
 			if err != nil {
 				zaplog.Logger.Error(string(data), err)

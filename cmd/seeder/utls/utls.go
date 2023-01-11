@@ -2,19 +2,19 @@ package utls
 
 import (
 	"fmt"
+	"go-template/internal/config"
 	"go-template/internal/mysql"
 	"go-template/pkg/utl/zaplog"
 	"log"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 // SeedData ...
 func SeedData(tableName string, rawQuery string) error {
-	err := godotenv.Load("./.env.local")
+	err := config.LoadEnv()
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println("erorr while loading the env", err)
+		return err
 	}
 
 	db, err := mysql.Connect()

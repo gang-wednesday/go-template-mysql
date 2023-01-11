@@ -10,6 +10,7 @@ import (
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
+	"go-template/internal/secondary"
 	"go-template/pkg/utl/cnvrttogql"
 	redisutil "go-template/pkg/utl/redisUtil"
 	"go-template/pkg/utl/rediscache"
@@ -71,4 +72,14 @@ func (r *queryResolver) Posts(ctx context.Context, input *gqlmodels.PostPaginati
 	}
 	pc := int(postCount)
 	return &gqlmodels.PostPayload{Posts: cnvrttogql.PostsToGraphqlPosts(posts, 1), PostCount: &pc}, nil
+}
+
+// Second is the resolver for the second field.
+func (r *queryResolver) Second(ctx context.Context, id *string) (*string, error) {
+	ans, err := secondary.CallSecondaryApi()
+	if err != nil {
+		return nil, err
+	}
+	return &ans, nil
+
 }

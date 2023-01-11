@@ -9,8 +9,8 @@ type Author struct {
 	Name               *string `json:"name"`
 	Active             *bool   `json:"active"`
 	Address            *string `json:"address"`
-	LastLogin          *string `json:"lastLogin"`
-	LastPasswordChange *string `json:"lastPasswordChange"`
+	LastLogin          *int    `json:"lastLogin"`
+	LastPasswordChange *int    `json:"lastPasswordChange"`
 	Token              *string `json:"token"`
 	Role               *Role   `json:"role"`
 	CreatedAt          *int    `json:"createdAt"`

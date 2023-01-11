@@ -17,6 +17,8 @@ import (
 	"go-template/internal/server"
 	"go-template/resolver"
 
+	"go-template/internal/secondary"
+
 	graphql2 "github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -26,6 +28,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq" // here
+	"github.com/sony/gobreaker"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -105,6 +108,14 @@ func Start(cfg *config.Configuration) (*echo.Echo, error) {
 	graphqlHandler.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New(100),
 	})
+	var st gobreaker.Settings
+	st.Name = "HTTP GET"
+	st.ReadyToTrip = func(counts gobreaker.Counts) bool {
+		failureRatio := float64(counts.TotalFailures) / float64(counts.Requests)
+		return counts.Requests >= 3 && failureRatio >= 0.6
+	}
+
+	secondary.Cb = gobreaker.NewCircuitBreaker(st)
 
 	// graphql playground
 	e.GET("/playground", func(c echo.Context) error {

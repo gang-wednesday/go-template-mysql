@@ -18,6 +18,12 @@ tasks:
   server:
    cmds:
     - go run ./cmd/server/main.go
+  secondary:
+    cmds:
+      - go run ./cmd/secondary/main.go
+  generate:
+    cmds:
+      - go run github.com/99designs/gqlgen generate
   # test:
   #   cmds:
   #     - echo " *** Running Coverage Tests ***"

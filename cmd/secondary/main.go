@@ -24,8 +24,11 @@ func main() {
 		defer body.Close()
 		buf, _ := io.ReadAll(body)
 		rdr1 := io.NopCloser(bytes.NewBuffer(buf))
+		defer rdr1.Close()
 		rdr2 := io.NopCloser(bytes.NewBuffer(buf))
+		defer rdr2.Close()
 		rd3 := io.NopCloser(bytes.NewBuffer(buf))
+		defer rd3.Close()
 		i, _, err := image.Decode(rdr1)
 		if err != nil {
 			return err
@@ -61,7 +64,7 @@ func main() {
 		c.Response().Writer.WriteHeader(http.StatusOK)
 		c.Response().Header().Set("Content-Type", "application/octet-stream")
 		w := c.Response().Writer
-		_, err = fmt.Fprintf(w, "dst: %v\n", i)
+		_, err = fmt.Fprintf(w, "dst: %v\n", dst)
 		return err
 
 	})

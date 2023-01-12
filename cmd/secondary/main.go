@@ -46,14 +46,14 @@ func main() {
 			go resize.Resize(images[x], val, imgCh)
 
 		}
-
-		a := <-imgCh
-		b := <-imgCh
-		d := <-imgCh
 		dst := imaging.New(240, 240, color.NRGBA{0, 0, 0, 0})
-		dst = imaging.Paste(dst, a, image.Pt(0, 0))
-		dst = imaging.Paste(dst, b, image.Pt(a.Bounds().Size().X, 0))
-		dst = imaging.Paste(dst, d, image.Pt(b.Bounds().Size().X+d.Bounds().Size().X, 0))
+		widthStart := 0
+		for x := 0; x < 3; x++ {
+			a := <-imgCh
+			dst = imaging.Paste(dst, a, image.Pt(widthStart, 0))
+			widthStart = widthStart + a.Bounds().Size().X
+		}
+
 		err = imaging.Save(dst, "./lol.jpeg")
 		if err != nil {
 			return err

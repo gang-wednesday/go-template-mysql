@@ -4,7 +4,7 @@ vendor
 .DS_Store
 profile.out
 coverage.out
-
+lol.jpeg
 .env.develop
 .env.qa
 .env
